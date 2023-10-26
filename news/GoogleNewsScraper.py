@@ -5,7 +5,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-from .mylib.log import current_utc_date_int, d, int_utc_to_str, log
+from mylib.log import current_utc_date_int, d, int_utc_to_str, log
 
 GOOGLE_NEWS_TYPE_COMMON = "World News"
 GOOGLE_NEWS_TYPE_TECH = "Tech & Innovation"
@@ -35,28 +35,98 @@ GOOGLE_NEWS_TYPES = {
 GOOGLE_NEWS_URL_SEARCH = "https://news.google.com/search?"
 
 SELECTOR_MENUBAR_LINKS = 'div[role="menubar"] a'
-SELECTOR_ARTICLES = "article a[href*='article']"
+# SELECTOR_ARTICLES = "article a[href*='./articles/']"
+SELECTOR_ARTICLES = "article"
 
 
-class GoogleNewsScraper:
+class MySelenium:
+    def __init__(
+        self,
+        selenium_driver,
+    ) -> None:
+        self.__driver = selenium_driver
+        self.__actions = None
+
+    def get_driver(self):
+        return self.__driver
+
+    def get_actions(self):
+        return self.__actions
+
+    def set_actions(self, actions):
+        self.__actions = actions
+
+    # click
+    def click(self, element):
+        if element:
+            self.__actions.move_to_element(element).click().perform()
+
+    # findElement
+    def find_element_by_css(self, element, css_selector: str):
+        if element:
+            try:
+                return element.find_element(By.CSS_SELECTOR, css_selector)
+            except Exception as exception:
+                return None
+
+    def find_elements_by_css(self, element, css_selector: str):
+        if element:
+            try:
+                return element.find_elements(By.CSS_SELECTOR, css_selector)
+            except Exception as exception:
+                return []
+
+    def find_element_by_xpath(self, element, xpath_selector: str):
+        if element:
+            try:
+                return element.find_element(By.XPATH, xpath_selector)
+            except Exception as exception:
+                return None
+
+    def find_elements_by_xpath(self, element, xpath_selector: str):
+        if element:
+            try:
+                return element.find_elements(By.XPATH, xpath_selector)
+            except Exception as exception:
+                return []
+
+    # send_keys
+    def send_keys(self, element, keys):
+        element.send_keys(keys)
+
+    # current_url
+    def current_url(self):
+        return self.__driver.current_url
+
+    # scroll_into_view
+    def scroll_into_view(self, element):
+        self.__driver.execute_script("arguments[0].scrollIntoView(true);", element)
+
+    def go_up_to_element_with_css(self, element, css_selector: str):
+        if element is None:
+            return None
+        while True:
+            parent = self.find_element_by_xpath(element, "..")
+            if parent is None:
+                return None
+            result = self.find_elements_by_css(parent, css_selector)
+            if len(result) > 0:
+                return result[0]
+            element = parent
+
+
+class GoogleNewsScraper(MySelenium):
     """scrape news texts from Google News"""
 
     def __init__(
         self,
         selenium_driver,
-        search_text: str = "",
     ):
+        super().__init__(selenium_driver)
         self.__news_utc_date = current_utc_date_int()
-        self.__driver = selenium_driver
-        self.__url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": search_text})
-        self.__actions = None
+        self.__search_text = ""
+        self.__url = ""
         self.__news_text = ""
-
-    def get_driver(self) -> str:
-        return self.__driver
-
-    def get_actions(self) -> list:
-        return self.__actions
 
     def get_news_utc_date(self) -> int:
         return self.__news_utc_date
@@ -64,83 +134,37 @@ class GoogleNewsScraper:
     def get_news_text(self) -> str:
         return self.__news_text
 
+    def get_search_text(self) -> str:
+        return self.__search_text
+
+    def __str__(self) -> str:
+        try:
+            return f"news: date:{int_utc_to_str(self.__news_utc_date)}, search: '{self.__search_text}', {self.__news_text}"
+        except Exception as exception:
+            log.error(__name__ + f" {exception}")
+            return __name__
+
     def scrape_by_search(self, search_text: str):
         self.__news_text = ""
+        self.__search_text = search_text
+        self.__url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": search_text})
         try:
-            self.__driver.get(self.__url)
-            self.__actions = ActionChains(self.__driver)
+            self.get_driver().get(self.__url)
+            self.set_actions(ActionChains(self.get_driver()))
 
+            articles_list = self.find_elements_by_css(
+                self.get_driver(), SELECTOR_ARTICLES
+            )
+            if len(articles_list) == 0:
+                raise Exception("No articles")
+            first_article = articles_list[0]
+
+            log.info(__name__ + f"{first_article.text}")
+            # log.info(__name__ + f"{articles_list}")
             time.sleep(10)
         except Exception as exception:
             log.error(__name__ + f" {exception}")
-            self.__actions = None
             self.__news_text = ""
 
         self.__news_utc_date = current_utc_date_int()
         return self
-        # try:
-        #     # get search page
-        #     url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": search_text})
-        #     # log.info(__name__ + f" {url}")
-        #     soup = self.get_page(url)
-
-        #     # scripts = soup.select("script")
-        #     # # log.info(__name__ + f" {scripts}")
-
-        #     # url = None
-        #     # for script in scripts:
-        #     #     text = script.text
-        #     #     # index_function = text.find("AF_initDataCallback")
-        #     #     # if index_function < 0:
-        #     #     #     continue
-        #     #     # print("\n")
-        #     #     stop_keywords_list = [
-        #     #         "gstatic.com",
-        #     #         "googleusercontent.com",
-        #     #         "google.com",
-        #     #     ]
-        #     #     count = 0
-        #     #     index_current = 0
-        #     #     while True:
-        #     #         index_https = text.find(
-        #     #             '"https://', index_current
-        #     #         )  # , index_function)
-        #     #         if index_https < 0:
-        #     #             break
-        #     #         index_quotas = text.find('"', index_https + 1)
-        #     #         if index_quotas < 0:
-        #     #             break
-        #     #         url = text[index_https + 1 : index_quotas]
-        #     #         index_current = index_quotas + 1
-        #     #         count += 1
-        #     #         if count == 1:
-        #     #             print()
-        #     #         # print(f"{count}. {url}\n")
-
-        #     #         is_stop_keyword_found = False
-        #     #         for keyword in stop_keywords_list:
-        #     #             if url.find(keyword) >= 0:
-        #     #                 is_stop_keyword_found = True
-        #     #                 break
-        #     #         if is_stop_keyword_found:
-        #     #             if count == 10:
-        #     #                 break
-        #     #             continue
-
-        #     #         print(f"{count} {url}\n")
-
-        #     # log.info(__name__ + f" {text[index_https:index_https+20]}")
-
-        #     articles_links = soup.select(SELECTOR_ARTICLES)
-        #     if len(articles_links) == 0:
-        #         raise Exception(f" No articles by search '{search_text}'")
-
-        #     # get news page
-        #     link = articles_links[0]
-        #     url = GOOGLE_NEWS_URL_MAIN + link.get("href")[2:]
-        #     log.info(__name__ + f" {url}")
-        #     soup = self.get_page(url)
-        #     log.info(__name__ + f" {soup.text}")
-
-        # except Exception as exception:
-        #     log.error(__name__ + f": url: {url}. {exception}")

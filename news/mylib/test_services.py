@@ -3,8 +3,9 @@ import aiohttp
 
 import os
 from .api_lib import api_delete, api_get, api_post, api_put
-from .redis_lib import redis_connect, redis_disconnect
-from .db_lib import db_connect, db_disconnect
+
+# from .redis_lib import redis_connect, redis_disconnect
+# from .db_lib import db_connect, db_disconnect
 from .selenium_lib import selenium_connect, selenium_disconnect
 from .log import log, d
 from .config import config
