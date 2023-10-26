@@ -35,3 +35,8 @@ def d(i: int) -> None:
 
 def current_utc_date_int() -> int:
     return int(datetime.now(timezone.utc).timestamp())
+
+
+def int_utc_to_str(utc_int_date: int, format="%Y-%m-%d %H:%M:%S UTC") -> str:
+    utc_datetime = datetime.utcfromtimestamp(utc_int_date)
+    return utc_datetime.strftime(format)

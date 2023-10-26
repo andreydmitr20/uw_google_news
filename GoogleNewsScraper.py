@@ -1,4 +1,4 @@
-from log import log, current_utc_date_int
+from log import log, current_utc_date_int, int_utc_to_str
 import requests
 from bs4 import *
 
@@ -60,7 +60,11 @@ class GoogleNewsScraper:
         }
 
     def __str__(self) -> str:
-        return f"news: date:{self.__news_utc_date}, type: '{self.__news_type}', {self.__news_list}"
+        try:
+            return f"news: date:{int_utc_to_str(self.__news_utc_date)}, type: '{self.__news_type}', {self.__news_list}"
+        except Exception as exception:
+            log.error(__name__ + f" {exception}")
+            return __name__
 
     def scrape(self):
         self.__news_list = []
