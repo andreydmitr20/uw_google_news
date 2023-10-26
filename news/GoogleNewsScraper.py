@@ -58,7 +58,7 @@ class GoogleNewsScraper(MySelenium):
             log.error(__name__ + f" {exception}")
             return __name__
 
-    def scrape_by_search(self, search_text: str):
+    def scrape_by_search(self, search_text: str, attempt: int):
         self.__news_text = ""
         self.__search_text = search_text
         self.__url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": search_text})
@@ -69,10 +69,12 @@ class GoogleNewsScraper(MySelenium):
             articles_list = self.find_elements_by_css(
                 self.get_driver(), SELECTOR_ARTICLES
             )
-            if len(articles_list) == 0:
+            len_articles_list = len(articles_list)
+            if len_articles_list == 0 or len_articles_list < attempt:
                 raise Exception("No articles")
-            first_article = articles_list[0]
-            log.info(__name__ + f" {first_article.text}")
+            first_article = articles_list[attempt - 1]
+            text = first_article.text.split("\n")[0]
+            log.info(__name__ + f" News: {text}")
 
             self.click(first_article)
             time.sleep(10)
