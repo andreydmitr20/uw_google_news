@@ -29,14 +29,15 @@ async def selenium_connect(proxy_url=None, options=None):
             options=options,
         )
 
-        # Set the maximum amount of time to wait for an element to be found
-        driver.implicitly_wait(10)  # Wait for up to 10 seconds
+        # # Set the maximum amount of time to wait for an element to be found
+        # driver.implicitly_wait(10)  # Wait for up to 10 seconds
 
-        # Set the maximum amount of time to wait for an action to be completed
-        driver.set_page_load_timeout(10)  # Set the page load timeout to 30 seconds
+        # # Set the maximum amount of time to wait for an action to be completed
+        # driver.set_page_load_timeout(20)  # Set the page load timeout to 30 seconds
 
-        # Set the maximum amount of time to wait for an asynchronous script to finish execution
-        driver.set_script_timeout(10)  # Set the script timeout to 20 seconds
+        # # Set the maximum amount of time to wait for an asynchronous script to finish execution
+        # driver.set_script_timeout(20)  # Set the script timeout to 20 seconds
+
         # driver = webdriver.Chrome(options=options)
         # driver.get("https://google.com")
         return driver

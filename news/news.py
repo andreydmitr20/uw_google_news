@@ -43,11 +43,14 @@ GOOGLE_NEWS_TYPE = [
 
 
 SMS_STOP_KEYPHRASE_LIST = [
-    "sex",
-    "(160 characters)",
-    "News not available in your country",
+    "sex".lower(),
+    "(160 characters)".lower(),
+    "News not available in your country".lower(),
+    "Content unavailable".lower(),
+    "I can't generate the story".lower(),
 ]
 MAX_SMS_LENGTH_IN_CHARS = 160
+MAX_CHARS_IN_NEWS_TEXT = 3000
 
 
 async def news_scraper(result: dict):
@@ -56,67 +59,76 @@ async def news_scraper(result: dict):
     search_text = result["search_text"]
     sms_text = ""
 
-    selenium_driver = None
-    try:
-        attempt = 0
-        while attempt < 5:
-            attempt += 1
+    attempt = 0
+    while attempt < 5:
+        attempt += 1
 
-            sms_text = ""
-            log.info(
-                log_pid + f"Attempt: {attempt} getting news for >>>'{search_text}'."
+        sms_text = ""
+        log.info(log_pid + f"Attempt: {attempt} getting news for >>>'{search_text}'.")
+        # scrape news text
+        selenium_driver = None
+        try:
+            proxy_url = None
+            selenium_driver = await selenium_connect(proxy_url=proxy_url)
+            news = GoogleNewsScraper(selenium_driver).scrape_by_search(
+                search_text, attempt
             )
-            try:
-                proxy_url = None
-                selenium_driver = await selenium_connect(proxy_url=proxy_url)
-                news = GoogleNewsScraper(selenium_driver).scrape_by_search(
-                    search_text, attempt
+        except Exception as exception:
+            log.error(log_pid + f"{exception}")
+        finally:
+            await selenium_disconnect(selenium_driver)
+        news_text = news.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
+        if news_text.strip() == "":
+            continue
+
+        # send to chatgpt
+        try:
+            log.info(log_pid + "chatGPT: has started")
+            messages = [
+                {
+                    "role": "user",
+                    "content": f"This is a text of one news: {news_text}",
+                },
+                {
+                    "role": "user",
+                    "content": f"""Please make a digest of this news,
+                    strictly no more than {MAX_SMS_LENGTH_IN_CHARS} 
+                    characters in English, without internet links.""",
+                },
+                {
+                    "role": "user",
+                    "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required",
+                },
+            ]
+            answer = await ask_chatgpt(messages)
+            # log.info(log_pid + "chatGPT: " + f" {answer}")
+            sms_text = answer["answer"]["content"]
+            # log.info(log_pid + f">>>{search_text}>>>{sms_text}")
+
+            # check sms
+            if sms_text.strip() == "":
+                log.info(log_pid + f" text is empty")
+                continue
+            if len(sms_text) > MAX_SMS_LENGTH_IN_CHARS:
+                log.info(
+                    log_pid
+                    + f" text length is more than {MAX_SMS_LENGTH_IN_CHARS}: {sms_text}"
                 )
 
-                await selenium_disconnect(selenium_driver)
-                selenium_driver = None
+                continue
+            is_stop_keyphrase_found = False
+            sms_text_lower = sms_text.lower()
+            for keyphrase in SMS_STOP_KEYPHRASE_LIST:
+                if sms_text_lower.find(keyphrase) >= 0:
+                    is_stop_keyphrase_found = True
+                    log.info(log_pid + f" stop phrase found '{keyphrase}: {sms_text}")
+                    break
+            if is_stop_keyphrase_found:
+                continue
+        except Exception as exception:
+            log.error(log_pid + f"{exception}")
 
-                # send to chatgpt
-                log.info(log_pid + "chatGPT: has started")
-
-                messages = [
-                    {
-                        "role": "user",
-                        "content": f"This is a text of one news: {news.get_news_text()[1:2000]}",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"""Please make a digest of this news,
-                        strictly no more than {MAX_SMS_LENGTH_IN_CHARS} 
-                        characters in English, without internet links.""",
-                    },
-                ]
-                answer = await ask_chatgpt(messages)
-                # log.info(log_pid + "chatGPT: " + f" {answer}")
-                sms_text = answer["answer"]["content"]
-                log.info(log_pid + f">>>{search_text}>>> SMS:{sms_text}")
-
-                # check sms
-                d(1)
-                if sms_text.strip() == "" or len(sms_text) > MAX_SMS_LENGTH_IN_CHARS:
-                    continue
-                is_stop_keyphrase_found = False
-                d(2)
-                for keyphrase in SMS_STOP_KEYPHRASE_LIST:
-                    if sms_text.find(keyphrase) >= 0:
-                        is_stop_keyphrase_found = True
-                        break
-                d(3)
-                if is_stop_keyphrase_found:
-                    continue
-            except Exception as exception:
-                log.error(log_pid + f"{exception}")
-            break
-
-    except Exception as exception:
-        log.error(log_pid + f"{exception}")
-    finally:
-        await selenium_disconnect(selenium_driver)
+        break
 
     result["sms_text"] = sms_text
 
@@ -125,4 +137,4 @@ if __name__ == "__main__":
     for news_type in GOOGLE_NEWS_TYPE:
         result = {"search_text": news_type, "sms_text": ""}
         asyncio.run(news_scraper(result))
-        log.info(f">>>{result['search_text']}>>> SMS:{result['sms_text']}")
+        log.info(f">>>{result['search_text']}>>>{result['sms_text']}")

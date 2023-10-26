@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from mylib.log import current_utc_date_int, d, int_utc_to_str, log
 from MySelenium import MySelenium
@@ -77,17 +79,17 @@ class GoogleNewsScraper(MySelenium):
             log.info(__name__ + f" News: {text}")
 
             self.click(first_article)
-            time.sleep(10)
+            time.sleep(5)
             self.switch_to_tab_index(1)
-
+            time.sleep(5)
+            wait = WebDriverWait(self.get_driver(), 60)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
             body = self.find_element_by_css(self.get_driver(), "body")
-            text = body.text
+            text = ""
+            if body:
+                text = body.text
             # log.info(__name__ + f" {text}")
-
             self.__news_text = text
-
-            # time.sleep(10)
-
         except Exception as exception:
             log.error(__name__ + f" {exception}")
             self.__news_text = ""
