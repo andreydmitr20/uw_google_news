@@ -78,3 +78,6 @@ class MySelenium:
             if len(result) > 0:
                 return result[0]
             element = parent
+
+    def switch_to_tab_index(self, tab_index: int):
+        self.__driver.switch_to.window(self.__driver.window_handles[tab_index])

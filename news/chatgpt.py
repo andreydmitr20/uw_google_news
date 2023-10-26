@@ -1,10 +1,13 @@
+import asyncio
+
 import openai
+from mylib.log import log
+
 from config import config
-from .mylib.log import log
 
 openai.api_key = config.openai_api_key
 
-MESSAGES = [
+TEST_MESSAGES = [
     {
         "role": "system",
         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair.",
@@ -16,7 +19,7 @@ MESSAGES = [
 ]
 
 
-async def ask_chat(messages: list) -> dict:
+async def ask_chatgpt(messages: list) -> dict:
     error = ""
     answer = ""
     try:
@@ -24,10 +27,19 @@ async def ask_chat(messages: list) -> dict:
             model="gpt-3.5-turbo", messages=messages
         )
         answer = completion.choices[0].message
-        log.info(f"{answer}")
+        # log.info(f"{answer}")
     except Exception as exception:
         error = f"{exception}"
-        log.warning(error)
+        log.warning("chatGPT: " + error)
         answer = ""
 
     return {"messages": messages, "error": error, "answer": answer}
+
+
+async def test_chatgpt():
+    result = await ask_chatgpt([{"role": "user", "content": "2+4="}])
+    log.info(f"{result}")
+
+
+if __name__ == "__main__":
+    asyncio.run(test_chatgpt())

@@ -8,34 +8,23 @@ from selenium.webdriver.common.keys import Keys
 from mylib.log import current_utc_date_int, d, int_utc_to_str, log
 from MySelenium import MySelenium
 
-GOOGLE_NEWS_TYPE_COMMON = "World News"
-GOOGLE_NEWS_TYPE_TECH = "Tech & Innovation"
-GOOGLE_NEWS_TYPE_BUSINESS = "Business & Finance"
-GOOGLE_NEWS_TYPE_SCIENCE = "Science & Discovery"
-GOOGLE_NEWS_TYPE_HEALTH = "Health & Wellness"
-GOOGLE_NEWS_TYPE_SPORTS = "Sports"
-GOOGLE_NEWS_TYPE_POLITICS = "Politics & Government"
-GOOGLE_NEWS_TYPE_ENVIRONMENT = "Environment & Sustainability"
-GOOGLE_NEWS_TYPE_ENTERTAINMENT = "Entertainment & Culture"
-GOOGLE_NEWS_TYPE_FOOD = "Food & Lifestyle"
-GOOGLE_NEWS_TYPE_ART = "Art & Fashion"
 
-GOOGLE_NEWS_TYPES = {
-    GOOGLE_NEWS_TYPE_COMMON.lower(): "World",
-    GOOGLE_NEWS_TYPE_TECH.lower(): "Technology",
-    GOOGLE_NEWS_TYPE_BUSINESS.lower(): "Business",
-    GOOGLE_NEWS_TYPE_SCIENCE.lower(): "Science",
-    GOOGLE_NEWS_TYPE_HEALTH.lower(): "Health",
-    GOOGLE_NEWS_TYPE_SPORTS.lower(): "Sports",
-    GOOGLE_NEWS_TYPE_POLITICS.lower(): "",
-    GOOGLE_NEWS_TYPE_ENVIRONMENT.lower(): "",
-    GOOGLE_NEWS_TYPE_ENTERTAINMENT.lower(): "Entertainment",
-    GOOGLE_NEWS_TYPE_FOOD.lower(): "",
-    GOOGLE_NEWS_TYPE_ART.lower(): "",
-}
+# GOOGLE_NEWS_TYPES = {
+#     GOOGLE_NEWS_TYPE_COMMON.lower(): "World",
+#     GOOGLE_NEWS_TYPE_TECH.lower(): "Technology",
+#     GOOGLE_NEWS_TYPE_BUSINESS.lower(): "Business",
+#     GOOGLE_NEWS_TYPE_SCIENCE.lower(): "Science",
+#     GOOGLE_NEWS_TYPE_HEALTH.lower(): "Health",
+#     GOOGLE_NEWS_TYPE_SPORTS.lower(): "Sports",
+#     GOOGLE_NEWS_TYPE_POLITICS.lower(): "",
+#     GOOGLE_NEWS_TYPE_ENVIRONMENT.lower(): "",
+#     GOOGLE_NEWS_TYPE_ENTERTAINMENT.lower(): "Entertainment",
+#     GOOGLE_NEWS_TYPE_FOOD.lower(): "",
+#     GOOGLE_NEWS_TYPE_ART.lower(): "",
+# }
 GOOGLE_NEWS_URL_SEARCH = "https://news.google.com/search?"
 
-SELECTOR_MENUBAR_LINKS = 'div[role="menubar"] a'
+# SELECTOR_MENUBAR_LINKS = 'div[role="menubar"] a'
 # SELECTOR_ARTICLES = "article a[href*='./articles/']"
 SELECTOR_ARTICLES = "article"
 
@@ -83,10 +72,20 @@ class GoogleNewsScraper(MySelenium):
             if len(articles_list) == 0:
                 raise Exception("No articles")
             first_article = articles_list[0]
+            log.info(__name__ + f" {first_article.text}")
 
-            log.info(__name__ + f"{first_article.text}")
-            # log.info(__name__ + f"{articles_list}")
-            time.sleep(10)
+            self.click(first_article)
+            time.sleep(4)
+            self.switch_to_tab_index(1)
+
+            body = self.find_element_by_css(self.get_driver(), "body")
+            text = body.text
+            log.info(__name__ + f" {text}")
+
+            self.__news_text = text
+
+            # time.sleep(10)
+
         except Exception as exception:
             log.error(__name__ + f" {exception}")
             self.__news_text = ""
