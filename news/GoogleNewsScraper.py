@@ -75,12 +75,12 @@ class GoogleNewsScraper(MySelenium):
             log.info(__name__ + f" {first_article.text}")
 
             self.click(first_article)
-            time.sleep(4)
+            time.sleep(10)
             self.switch_to_tab_index(1)
 
             body = self.find_element_by_css(self.get_driver(), "body")
             text = body.text
-            log.info(__name__ + f" {text}")
+            # log.info(__name__ + f" {text}")
 
             self.__news_text = text
 

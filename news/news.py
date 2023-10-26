@@ -28,7 +28,7 @@ GOOGLE_NEWS_TYPE_FOOD = "Food & Lifestyle"
 GOOGLE_NEWS_TYPE_ART = "Art & Fashion"
 
 CHAT_GPT_PROMPT_DIGEST_160 = """Please make a digest of this news,
- strictly no more than 160 characters in English, for sending an SMS digest."""
+ strictly no more than 160 characters in English, without internet links."""
 
 CHAT_GPT_PROMPT_160 = """Please, make it under 160 symbols. That is required."""
 
@@ -45,7 +45,8 @@ async def news_scraper(search_text: str):
         await selenium_disconnect(selenium_driver)
         selenium_driver = None
         # send to chatgpt
-        d(3)
+        log.info(log_pid + "chatGPT: has started")
+
         messages = [
             {
                 "role": "user",
@@ -56,10 +57,9 @@ async def news_scraper(search_text: str):
                 "content": CHAT_GPT_PROMPT_DIGEST_160,
             },
         ]
-        d(4)
         answer = await ask_chatgpt(messages)
-        d(5)
-        log.info(log_pid + "chatGPT: " + f" {answer}")
+        # log.info(log_pid + "chatGPT: " + f" {answer}")
+        log.info(log_pid + "SMS: " + f" {answer['answer']['content']}")
 
     except Exception as exception:
         log.error(log_pid + f"{exception}")
