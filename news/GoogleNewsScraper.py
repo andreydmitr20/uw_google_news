@@ -1,6 +1,4 @@
-from news.log import log, d, current_utc_date_int, int_utc_to_str
-import requests
-from bs4 import *
+from .mylib.log import log, d, current_utc_date_int, int_utc_to_str
 from urllib.parse import urlencode
 
 
@@ -69,50 +67,6 @@ class GoogleNewsScraper:
         except Exception as exception:
             log.error(__name__ + f" {exception}")
             return __name__
-
-    def get_page(self, url: str):
-        d(1)
-        response = requests.get(url)
-        d(2)
-        # log.info(__name__ + f" {response}")
-        if response.status_code < 200 or response.status_code >= 400:
-            raise Exception(f" Response code {response.status_code}")
-        d(3)
-        return BeautifulSoup(response.text, "html.parser")
-
-    def scrape(self):
-        self.__news_list = []
-        try:
-            # main page
-            url = GOOGLE_NEWS_URL_MAIN
-            soup = self.get_page(url)
-            menubar_links = soup.select(SELECTOR_MENUBAR_LINKS)
-            # log.info(__name__ + f" {menubar_links}")
-            url = None
-            search_text = GOOGLE_NEWS_TYPES[self.__news_type].lower()
-            # search link
-            for link in menubar_links:
-                text = link.text.lower()
-                # log.info(__name__ + f" >>{text}>>{search_text}")
-
-                if text.find(search_text) >= 0:
-                    url = GOOGLE_NEWS_URL_MAIN + link.get("href")[2:]
-                    break
-            # log.info(__name__ + f" {url}")
-            if url is None:
-                raise Exception(__name__ + f' Menu item "{search_text}" is not found')
-
-            # news page
-
-            search_text = "Entertainment & Culture"
-            url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": "Entertainment & Culture"})
-            log.info(__name__ + f" {url}")
-
-        except Exception as exception:
-            log.error(__name__ + f": url: {url}. {exception}")
-
-        self.__news_utc_date = current_utc_date_int()
-        return self
 
     def scrape_by_search(self, search_text: str):
         try:
