@@ -18,7 +18,7 @@ from .config import config
 openai.api_key = config.openai_api_key
 CHAT_GPT_ANSWER_SECONDS_TIMEOUT = 20
 CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR = 20
-CHAT_GPT_RATE_LIMIT_TEXT = "Rate limit".lower()
+CHAT_GPT_RATE_LIMIT_TEXT = "RateLimitError".lower()
 
 """
   {
@@ -81,6 +81,7 @@ def ask_chatgpt_worker(chatgpt_data: dict):
 
         # time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
     chatgpt_data["error"] = error
+    # log.warning(log_pid + error)
     d(3)
 
 
@@ -118,63 +119,14 @@ def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
                 chatgpt_data.update(shared_dict)
                 break
 
+            error = shared_dict["error"]
+            log.info(log_pid + f"{error}")
+            if is_chatgpt_error_rate_limit(error):
+                chatgpt_data.update(shared_dict)
+                break
             time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
             continue
     return chatgpt_data
-
-
-def ask_chatgpt1(chatgpt_data: dict, log_pid: str = "") -> dict:
-    """ask_chatgpt"""
-    log_pid += "ask_chatgpt: "
-    result = chatgpt_data
-
-    # for attempt_to_get_data in range(5):
-    d(50)
-    os_pid = None
-    os_pid_creation_time = None
-    result["answer"] = ""
-    result["error"] = ""
-    try:
-        d(51)
-        spawn = mp.get_context("spawn")
-        process = spawn.Process(target=ask_chatgpt_worker, args=(result,))
-        d(52)
-        process.daemon = True
-        process.start()
-        process.join(timeout=CHAT_GPT_MAX_SECONDS_TO_ANSWER)
-        d(53)
-        # time.sleep(1)
-        d(54)
-        os_pid = process.pid
-        process_info = psutil.Process(os_pid)
-        d(55)
-        os_pid_creation_time = process_info.create_time()
-        log.info(log_pid + f"process pid={os_pid} has started")
-
-        for seconds_timeout in range(CHAT_GPT_MAX_SECONDS_TO_ANSWER):
-            d(10)
-            process_info = psutil.Process(os_pid)
-            if process_info.create_time() != os_pid_creation_time:
-                log.info(log_pid + f"process pid={os_pid} has another creation time")
-                return result
-            if not process_info.is_running():
-                log.info(log_pid + f"process pid={os_pid} is not running")
-                return result
-            d(11)
-            time.sleep(1)
-
-    finally:
-        d(20)
-        process_info = psutil.Process(os_pid)
-        if (
-            process_info.is_running()
-            and process_info.create_time() == os_pid_creation_time
-        ):
-            os.kill(os_pid)
-            log.info(log_pid + f"process pid={os_pid} has killed")
-    d(30)
-    result["error"] = "Too much attempts to get data"
-    return result
 
 
 def is_chatgpt_error_rate_limit(error: str) -> bool:
