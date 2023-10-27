@@ -72,7 +72,7 @@ def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
             chatgpt_data,
             timeout_seconds=CHAT_GPT_MAX_SECONDS_TO_ANSWER,
         )
-        # log.info(f">{result}")
+        log.info(f">{result}")
 
         if result:
             error = result["error"]
