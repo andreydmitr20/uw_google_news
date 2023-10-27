@@ -106,7 +106,7 @@ def news_scraper(result: dict) -> dict:
                 ],
             }
             # chatgpt_data_result = ask_chatgpt(chatgpt_data)
-            ask_chatgpt(chatgpt_data)
+            ask_chatgpt(chatgpt_data, log_pid)
             chatgpt_data_result = chatgpt_data
             # log.info(log_pid + "chatGPT: " + f" {chatgpt_data_result}")
             error = chatgpt_data_result["error"]

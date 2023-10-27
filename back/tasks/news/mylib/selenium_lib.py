@@ -21,6 +21,15 @@ async def selenium_connect(proxy_url=None, options=None):
             # options.add_argument("--headless")
             options.add_experimental_option("useAutomationExtension", False)
             options.add_experimental_option("excludeSwitches", ["enable-automation"])
+
+            # Set preferences to disable images and videos
+            prefs = {
+                "profile.managed_default_content_settings.images": 2,  # Disable images
+                "profile.managed_default_content_settings.media_stream": 2,  # Disable media (videos)
+            }
+
+            options.add_experimental_option("prefs", prefs)
+
         if proxy_url:
             options.add_argument(f"--proxy-server={proxy_url}")
 
