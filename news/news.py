@@ -70,14 +70,14 @@ async def news_scraper(result: dict):
         try:
             proxy_url = None
             selenium_driver = await selenium_connect(proxy_url=proxy_url)
-            news = GoogleNewsScraper(selenium_driver).scrape_by_search(
-                search_text, attempt
-            )
+            news_scraper = GoogleNewsScraper(selenium_driver)
+
+            await news_scraper.scrape_by_search(search_text, attempt)
         except Exception as exception:
             log.error(log_pid + f"{exception}")
         finally:
             await selenium_disconnect(selenium_driver)
-        news_text = news.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
+        news_text = news_scraper.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
         if news_text.strip() == "":
             continue
 

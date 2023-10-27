@@ -1,3 +1,4 @@
+import asyncio
 from urllib.parse import urlencode
 import time
 from selenium import webdriver
@@ -60,7 +61,7 @@ class GoogleNewsScraper(MySelenium):
             log.error(__name__ + f" {exception}")
             return __name__
 
-    def scrape_by_search(self, search_text: str, attempt: int):
+    async def scrape_by_search(self, search_text: str, attempt: int):
         self.__news_text = ""
         self.__search_text = search_text
         self.__url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": search_text})
@@ -79,10 +80,10 @@ class GoogleNewsScraper(MySelenium):
             log.info(__name__ + f" News: {text}")
 
             self.click(first_article)
-            time.sleep(5)
+            await asyncio.sleep(5)
             self.switch_to_tab_index(1)
-            time.sleep(5)
-            wait = WebDriverWait(self.get_driver(), 35)
+            await asyncio.sleep(5)
+            wait = WebDriverWait(self.get_driver(), 10)
             wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
             body = self.find_element_by_css(self.get_driver(), "body")
             text = ""
@@ -95,4 +96,3 @@ class GoogleNewsScraper(MySelenium):
             self.__news_text = ""
 
         self.__news_utc_date = current_utc_date_int()
-        return self
