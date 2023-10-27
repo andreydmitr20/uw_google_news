@@ -82,7 +82,7 @@ class GoogleNewsScraper(MySelenium):
             time.sleep(5)
             self.switch_to_tab_index(1)
             time.sleep(5)
-            wait = WebDriverWait(self.get_driver(), 60)
+            wait = WebDriverWait(self.get_driver(), 35)
             wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
             body = self.find_element_by_css(self.get_driver(), "body")
             text = ""

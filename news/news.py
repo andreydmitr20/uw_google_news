@@ -97,7 +97,7 @@ async def news_scraper(result: dict):
                 },
                 {
                     "role": "user",
-                    "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required",
+                    "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required. And without noting characters count.",
                 },
             ]
             answer = await ask_chatgpt(messages)
