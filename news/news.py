@@ -94,7 +94,7 @@ async def news_scraper(result: dict):
                     {
                         "role": "user",
                         "content": f"""Please make a digest of this news,
-                    strictly no more than {MAX_SMS_LENGTH_IN_CHARS} 
+                    strictly less or equal {MAX_SMS_LENGTH_IN_CHARS} 
                     characters in English, without internet links.""",
                     },
                     {
