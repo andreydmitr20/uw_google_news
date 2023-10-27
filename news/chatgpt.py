@@ -60,9 +60,17 @@ async def ask_chatgpt(chatgpt_data: dict, log_pid: str = ""):
             thread.join(timeout=CHAT_GPT_MAX_SECONDS_TO_ANSWER)
             error = chatgpt_data["error"]
             answer = chatgpt_data["answer"]
-            if error != "" or answer != "":
+            if answer != "":
+                # ok
+                chatgpt_data["error"] = ""
                 return
-            log.warning(log_pid + f"ChatGPT hang on. Restarted {attempt} time(s)")
+            if error == "":
+                log.warning(log_pid + f"ChatGPT hang on. Restarted {attempt} time(s)")
+            else:
+                if error.lower().find("Rate limit".lower()) >= 0:
+                    log.warning(log_pid + f"ChatGPT rate limit error. {error}")
+                else:
+                    return
         except Exception as exception:
             log.warning(log_pid + f" {exception}")
 
