@@ -33,7 +33,7 @@ def chatgpt_worker(data):
         answer = completion.choices[0].message
         d(3)
         result["answer"] = answer["content"]
-        # log.info(f"{answer['content']}")
+        log.info(f"chatgpt_worker: {answer}")
 
     except Exception as exception:
         d(4)
