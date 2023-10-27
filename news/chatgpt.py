@@ -66,33 +66,7 @@ async def ask_chatgpt(chatgpt_data: dict, log_pid: str = ""):
         except Exception as exception:
             log.warning(log_pid + f" {exception}")
 
-        await asyncio(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
-
-        # chatgpt_timeout = CHAT_GPT_MAX_SECONDS_TO_ANSWER
-        # is_get_result = False
-        # while chatgpt_timeout > 0:
-        #     chatgpt_timeout -= 1
-        #     await asyncio.sleep(1)
-        #     result = result_queue.get()
-        #     if result:
-        #         error = result["error"]
-        #         if error != "":
-        #             # error
-        #             log.warning(log_pid + f"ChatGPT error: {error}")
-        #             is_get_result = True
-        #             chatgpt_data["error"] = error
-        #             break
-        #         answer = result["answer"]
-        #         if answer != "":
-        #             # ok
-        #             is_get_result = True
-        #             chatgpt_data["answer"] = answer
-        #             break
-        # if is_get_result:
-        #     thread.join()
-        #     break
-        # log.warning(log_pid + f"ChatGPT hang on. Restarted {attempt} time(s)")
-        # thread._stop()
+        await asyncio.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
 
 
 async def test_chatgpt():
