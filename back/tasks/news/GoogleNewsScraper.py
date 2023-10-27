@@ -20,7 +20,7 @@ from MySelenium import MySelenium
 #     GOOGLE_NEWS_TYPE_ART.lower(): "",
 # }
 GOOGLE_NEWS_URL_SEARCH = "https://news.google.com/search?"
-
+GOOGLE_NEWS_LOAD_NEWS_PAGE_TIMEOUT = 30
 # SELECTOR_MENUBAR_LINKS = 'div[role="menubar"] a'
 # SELECTOR_ARTICLES = "article a[href*='./articles/']"
 SELECTOR_ARTICLES = "article"
@@ -77,7 +77,7 @@ class GoogleNewsScraper(MySelenium):
             await asyncio.sleep(5)
             self.switch_to_tab_index(1)
             await asyncio.sleep(5)
-            self.wait_tag_with_timeout("body", 20)
+            self.wait_tag_with_timeout("body", GOOGLE_NEWS_LOAD_NEWS_PAGE_TIMEOUT)
             body = self.find_element_by_css(self.get_driver(), "body")
             text = ""
             if body:

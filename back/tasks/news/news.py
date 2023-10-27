@@ -55,7 +55,7 @@ MAX_CHARS_IN_NEWS_TEXT = 3000
 
 
 @shared_task
-async def news_scraper(result: dict):
+def news_scraper(result: dict):
     log_pid = f"news-{os.getpid()}: "
 
     search_text = result["search_text"]
@@ -71,14 +71,14 @@ async def news_scraper(result: dict):
         selenium_driver = None
         try:
             proxy_url = None
-            selenium_driver = await selenium_connect(proxy_url=proxy_url)
+            selenium_driver = asyncio.run(selenium_connect(proxy_url=proxy_url))
             news_scraper = GoogleNewsScraper(selenium_driver)
 
-            await news_scraper.scrape_by_search(search_text, attempt)
+            asyncio.run(news_scraper.scrape_by_search(search_text, attempt))
         except Exception as exception:
             log.error(log_pid + f"{exception}")
         finally:
-            await selenium_disconnect(selenium_driver)
+            asyncio.run(selenium_disconnect(selenium_driver))
         news_text = news_scraper.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
         if news_text.strip() == "":
             continue
@@ -148,5 +148,5 @@ async def news_scraper(result: dict):
 if __name__ == "__main__":
     for news_type in GOOGLE_NEWS_TYPE:
         result = {"error": "", "search_text": news_type, "sms_text": ""}
-        asyncio.run(news_scraper(result))
-        log.info(f">>>{result['search_text']}>>>{result['sms_text']}")
+        news_scraper(result)
+        log.info(f"{result['error']}>>>{result['search_text']}>>>{result['sms_text']}")
