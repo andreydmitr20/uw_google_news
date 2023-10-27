@@ -64,7 +64,7 @@ async def news_scraper(result: dict):
         attempt += 1
 
         sms_text = ""
-        log.info(log_pid + f"Attempt: {attempt} getting news for >>>'{search_text}'.")
+        log.info(log_pid + f"Attempt: {attempt} getting news for '{search_text}'.")
         # scrape news text
         selenium_driver = None
         try:
@@ -103,7 +103,7 @@ async def news_scraper(result: dict):
                     },
                 ],
             }
-            await ask_chatgpt(chatgpt_data)
+            ask_chatgpt(chatgpt_data)
             # log.info(log_pid + "chatGPT: " + f" {chatgpt_data['answer']}")
             if chatgpt_data["error"] != "":
                 log.error(log_pid + "chatGPT: " + f"Error: {chatgpt_data['error']}")
