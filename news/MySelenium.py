@@ -2,6 +2,8 @@ from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class MySelenium:
@@ -81,3 +83,7 @@ class MySelenium:
 
     def switch_to_tab_index(self, tab_index: int):
         self.__driver.switch_to.window(self.__driver.window_handles[tab_index])
+
+    def wait_tag_with_timeout(self, tag: str, timeout_in_seconds: int):
+        wait = WebDriverWait(self.__driver, timeout_in_seconds)
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, tag)))

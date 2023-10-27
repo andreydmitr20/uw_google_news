@@ -64,45 +64,51 @@ async def news_scraper(result: dict):
         attempt += 1
 
         sms_text = ""
-        log.info(log_pid + f"Attempt: {attempt} getting news for >>>'{search_text}'.")
+        log.info(log_pid + f"Attempt: {attempt} getting news for '{search_text}'.")
         # scrape news text
         selenium_driver = None
         try:
             proxy_url = None
             selenium_driver = await selenium_connect(proxy_url=proxy_url)
-            news = GoogleNewsScraper(selenium_driver).scrape_by_search(
-                search_text, attempt
-            )
+            news_scraper = GoogleNewsScraper(selenium_driver)
+
+            await news_scraper.scrape_by_search(search_text, attempt)
         except Exception as exception:
             log.error(log_pid + f"{exception}")
         finally:
             await selenium_disconnect(selenium_driver)
-        news_text = news.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
+        news_text = news_scraper.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
         if news_text.strip() == "":
             continue
 
         # send to chatgpt
         try:
-            log.info(log_pid + "chatGPT: has started")
-            messages = [
-                {
-                    "role": "user",
-                    "content": f"This is a text of one news: {news_text}",
-                },
-                {
-                    "role": "user",
-                    "content": f"""Please make a digest of this news,
-                    strictly no more than {MAX_SMS_LENGTH_IN_CHARS} 
+            chatgpt_data = {
+                "answer": "",
+                "error": "",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"This is a text of one news: {news_text}",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""Please make a digest of this news,
+                    strictly less or equal {MAX_SMS_LENGTH_IN_CHARS} 
                     characters in English, without internet links.""",
-                },
-                {
-                    "role": "user",
-                    "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required. And without noting characters count.",
-                },
-            ]
-            answer = await ask_chatgpt(messages)
-            # log.info(log_pid + "chatGPT: " + f" {answer}")
-            sms_text = answer["answer"]["content"]
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required. And without noting characters count.",
+                    },
+                ],
+            }
+            result = ask_chatgpt(chatgpt_data)
+            # log.info(log_pid + "chatGPT: " + f" {result['answer']}")
+            if result["error"] != "":
+                log.error(log_pid + "chatGPT: " + f"Error: {result['error']}")
+                continue
+            sms_text = result["answer"]
             # log.info(log_pid + f">>>{search_text}>>>{sms_text}")
 
             # check sms
