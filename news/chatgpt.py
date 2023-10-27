@@ -33,7 +33,7 @@ def chatgpt_worker(data):
         answer = completion.choices[0].message
         d(3)
         result["answer"] = answer["content"]
-        log.info(f"chatgpt_worker: {answer}")
+        # log.info(f"chatgpt_worker: {answer}")
 
     except Exception as exception:
         d(4)
@@ -72,7 +72,7 @@ def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
             chatgpt_data,
             timeout_seconds=CHAT_GPT_MAX_SECONDS_TO_ANSWER,
         )
-        log.info(f">{result}")
+        # log.info(f">{result}")
 
         if result:
             error = result["error"]
@@ -81,9 +81,7 @@ def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
                     log_pid
                     + f"ChatGPT rate limit. Waiting {CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR}s. {error}"
                 )
-                time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
-            else:
-                break
+            break
         else:
             log.warning(log_pid + f"ChatGPT hang on. Restarted {attempt} time(s)")
             time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)

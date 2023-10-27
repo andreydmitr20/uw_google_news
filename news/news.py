@@ -103,12 +103,13 @@ async def news_scraper(result: dict):
                     },
                 ],
             }
-            result = ask_chatgpt(chatgpt_data)
-            log.info(log_pid + "chatGPT: " + f" {result}")
-            if result["error"] != "":
-                log.error(log_pid + "chatGPT: " + f"Error: {result['error']}")
+            chatgpt_data_result = ask_chatgpt(chatgpt_data)
+            # log.info(log_pid + "chatGPT: " + f" {chatgpt_data_result}")
+            error = chatgpt_data_result["error"]
+            if error != "":
+                log.error(log_pid + "chatGPT: " + f"Error: {error}")
                 continue
-            sms_text = result["answer"]
+            sms_text = chatgpt_data_result["answer"]
             # log.info(log_pid + f">>>{search_text}>>>{sms_text}")
 
             # check sms
