@@ -17,6 +17,7 @@ openai.api_key = config.openai_api_key
 
 CHAT_GPT_MAX_SECONDS_TO_ANSWER = 4
 CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR = 10
+CHAT_GPT_RATE_LIMIT_TEXT = "Rate limit".lower()
 
 
 def chatgpt_worker(data):
@@ -75,17 +76,21 @@ def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
         # log.info(f">{result}")
 
         if result:
-            error = result["error"]
-            if error.lower().find("Rate limit".lower()) >= 0:
-                log.warning(
-                    log_pid
-                    + f"ChatGPT rate limit. Waiting {CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR}s. {error}"
-                )
+            # error = result["error"]
+            # if error.lower().find(CHAT_GPT_RATE_LIMIT_TEXT) >= 0:
+            #     log.warning(
+            #         log_pid
+            #         + f"ChatGPT rate limit. Waiting {CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR}s. {error}"
+            #     )
             break
         else:
             log.warning(log_pid + f"ChatGPT hang on. Restarted {attempt} time(s)")
             time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
     return result
+
+
+def is_chatgpt_error_rate_limit(error: str) -> bool:
+    return error.lower().find(CHAT_GPT_RATE_LIMIT_TEXT) >= 0
 
 
 def test_chatgpt():

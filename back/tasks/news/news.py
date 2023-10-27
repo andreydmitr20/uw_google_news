@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from chatgpt import ask_chatgpt
+from chatgpt import ask_chatgpt, is_chatgpt_error_rate_limit
 from GoogleNewsScraper import GoogleNewsScraper
 from mylib.log import d, log
 from mylib.selenium_lib import selenium_connect, selenium_disconnect
@@ -109,6 +109,9 @@ async def news_scraper(result: dict):
             # log.info(log_pid + "chatGPT: " + f" {chatgpt_data_result}")
             error = chatgpt_data_result["error"]
             if error != "":
+                if is_chatgpt_error_rate_limit(error):
+                    result["error"] = error
+                    return
                 log.error(log_pid + "chatGPT: " + f"Error: {error}")
                 continue
             sms_text = chatgpt_data_result["answer"]
@@ -144,6 +147,6 @@ async def news_scraper(result: dict):
 
 if __name__ == "__main__":
     for news_type in GOOGLE_NEWS_TYPE:
-        result = {"search_text": news_type, "sms_text": ""}
+        result = {"error": "", "search_text": news_type, "sms_text": ""}
         asyncio.run(news_scraper(result))
         log.info(f">>>{result['search_text']}>>>{result['sms_text']}")
