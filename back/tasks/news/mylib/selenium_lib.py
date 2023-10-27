@@ -26,10 +26,18 @@ async def selenium_connect(proxy_url=None, options=None):
             prefs = {
                 "profile.managed_default_content_settings.images": 2,  # Disable images
                 "profile.managed_default_content_settings.media_stream": 2,  # Disable media (videos)
+                "profile.default_content_setting_values.notifications": 2,
             }
+            # Disable bundled Flash plugin and extensions
+            options.add_argument("--disable-bundled-ppapi-flash")
+            options.add_argument("--disable-extensions")
 
             options.add_experimental_option("prefs", prefs)
 
+            options.add_argument("--disable-gpu")
+            options.add_argument("--disable-hardware-acceleration")
+            options.add_argument("--disable-logging")
+            options.add_argument("--disable-javascript")
         if proxy_url:
             options.add_argument(f"--proxy-server={proxy_url}")
 
