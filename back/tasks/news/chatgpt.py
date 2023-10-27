@@ -87,31 +87,40 @@ def ask_chatgpt_worker(chatgpt_data: dict):
 def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
     """ask_chatgpt"""
     log_pid += "ask_chatgpt: "
+    for _ in range(5):
+        with mp.Manager() as manager:
+            # Create a shared dictionary
+            shared_dict = manager.dict()
+            shared_dict.update(chatgpt_data)
+            process = None
+            try:
+                process = mp.Process(target=ask_chatgpt_worker, args=(shared_dict,))
+                process.start()
+                log.info(log_pid + f"process pid={process.pid} has started")
+                process.join(timeout=CHAT_GPT_ANSWER_SECONDS_TIMEOUT)
+                # log.info(log_pid + f"{shared_dict}")
 
-    with mp.Manager() as manager:
-        # Create a shared dictionary
-        shared_dict = manager.dict()
-        shared_dict.update(chatgpt_data)
-        process = None
-        try:
-            process = mp.Process(target=ask_chatgpt_worker, args=(shared_dict,))
-            process.start()
-            log.info(log_pid + f"process pid={process.pid} has started")
-            process.join(timeout=CHAT_GPT_ANSWER_SECONDS_TIMEOUT)
+            except Exception as exception:
+                log.info(log_pid + f"{exception}")
+            finally:
+                if process:
+                    if process.is_alive():
+                        log.info(log_pid + f"ChatGPT process is hanging on, terminated")
+                        process.terminate()
+                        chatgpt_data["error"] = f"ChatGPT process is hanging on"
+                        chatgpt_data["answer"] = ""
+                        time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
+                        continue
+
             # log.info(log_pid + f"{shared_dict}")
+            if shared_dict["answer"] != "":
+                shared_dict["error"] = ""
+                chatgpt_data.update(shared_dict)
+                break
 
-        except Exception as exception:
-            log.info(log_pid + f"{exception}")
-        finally:
-            d(000)
-            if process:
-                d(999)
-                if process.is_alive():
-                    log.info(log_pid + f"ChatGPT process is hanging on, terminated")
-                    process.terminate()
-        chatgpt_data.update(shared_dict)
-        # log.info(log_pid + f"{chatgpt_data}")
-        return chatgpt_data
+            time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
+            continue
+    return chatgpt_data
 
 
 def ask_chatgpt1(chatgpt_data: dict, log_pid: str = "") -> dict:
