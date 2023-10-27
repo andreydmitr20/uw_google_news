@@ -13,7 +13,7 @@ from .mylib.test_services import (
     test_services,
 )
 
-from config import config
+from .config import config
 from celery import shared_task
 
 GOOGLE_NEWS_TYPE_WORLD = "World News"
@@ -144,10 +144,3 @@ def news_scraper(result: dict) -> dict:
 
     result["sms_text"] = sms_text
     return result
-
-
-if __name__ == "__main__":
-    for news_type in GOOGLE_NEWS_TYPE:
-        result = {"error": "", "search_text": news_type, "sms_text": ""}
-        news_scraper(result)
-        log.info(f"{result['error']}>>>{result['search_text']}>>>{result['sms_text']}")

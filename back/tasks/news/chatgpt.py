@@ -1,91 +1,123 @@
 from copy import deepcopy
-
+import psutil
 import os
 import time
 import threading
 from queue import Queue
 from unittest import result
+import multiprocessing as mp
 
 import openai
 from .mylib.log import log, d
 import concurrent.futures
+from openai.error import ServiceUnavailableError, APIError, RateLimitError, Timeout
 
 
-from config import config
+from .config import config
 
 openai.api_key = config.openai_api_key
-
-CHAT_GPT_MAX_SECONDS_TO_ANSWER = 4
-CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR = 10
+CHAT_GPT_MAX_SECONDS_TO_ANSWER = 20
+CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR = 20
 CHAT_GPT_RATE_LIMIT_TEXT = "Rate limit".lower()
 
+"""
+  {
+  "id": "chatcmpl-8EKp0lzoyJHriXHT8gZ0eL5qBey1Y",
+  "object": "chat.completion",
+  "created": 1698427322,
+  "model": "gpt-3.5-turbo-0613",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Boulder Weekly reveals winners of Best of Boulder East County 2023, including pARTiculars Art Gallery, Primrose School, Rabbit Hole Recreation, Nissi's, and Longmont Theatre Company."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 761,
+    "completion_tokens": 42,
+    "total_tokens": 803
+  }
+}
+"""
 
-def chatgpt_worker(data):
-    result = deepcopy(data)
+
+def ask_chatgpt_worker(chatgpt_data: dict):
     try:
-        # log.info(f" pid:{os.getpid()}")
         d(1)
-        completion = openai.ChatCompletion.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=result["messages"],
-            timeout=CHAT_GPT_MAX_SECONDS_TO_ANSWER,
+            temperature=0.7,
+            top_p=1.0,
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            n=1,
+            stop=None,
+            messages=chatgpt_data["messages"],
         )
         d(2)
-        answer = completion.choices[0].message
-        d(3)
-        result["answer"] = answer["content"]
-        # log.info(f"chatgpt_worker: {answer}")
+        # log.info(log_pid + f"==={response}")
+        chatgpt_data["answer"] = response["choices"][0]["message"]["content"]
+        chatgpt_data["error"] = ""
+        return
+    except APIError:
+        error = f"APIError Exception, retrying..."
+        # log.warning(log_pid + error)
+    except Timeout:
+        error = f"APIError Timeout, retrying..."
+        # log.warning(log_pid + error)
 
-    except Exception as exception:
-        d(4)
-        error = f"{exception}"
-        # log.warning(error)
-        result["error"] = error
+    except ServiceUnavailableError:
+        error = f"ServiceUnavailableError Exception, retrying..."
+        # log.warning(log_pid + error)
 
-    # log.info(f"{result}")
-    return result
+        # time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
+    except RateLimitError:
+        error = f"RateLimitError Exception, retrying..."
+        # log.warning(log_pid + error)
 
-
-def run_function_with_timeout(func, *args, timeout_seconds):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(func, *args)
-        try:
-            result = future.result(timeout=timeout_seconds)
-            return result
-        except concurrent.futures.TimeoutError:
-            return None
+        # time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
+    chatgpt_data["error"] = error
+    d(3)
 
 
 def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
     """ask_chatgpt"""
     log_pid += "ask_chatgpt: "
-    attempt = 0
+    result = chatgpt_data
 
-    while attempt < 5:
-        attempt += 1
-        log.info(log_pid + f"ChatGPT has started (attempt {attempt})")
+    for _ in range(5):
+        os_pid = None
+        os_pid_creation_time = None
+        result["answer"] = ""
+        result["error"] = ""
+        try:
+            spawn = mp.get_context("spawn")
+            process = spawn.Process(target=ask_chatgpt_worker, args=(result,))
+            process.daemon = True
+            process.start()
+            os_pid = process.pid
+            process_info = psutil.Process(os_pid)
+            os_pid_creation_time = process_info.create_time()
 
-        chatgpt_data["error"] = ""
-        chatgpt_data["answer"] = ""
+            for _ in range(CHAT_GPT_MAX_SECONDS_TO_ANSWER):
+                process_info = psutil.Process(os_pid)
+                if not process_info.is_running():
+                    return result
+                time.sleep(1)
 
-        result = run_function_with_timeout(
-            chatgpt_worker,
-            chatgpt_data,
-            timeout_seconds=CHAT_GPT_MAX_SECONDS_TO_ANSWER,
-        )
-        # log.info(f">{result}")
+        finally:
+            process_info = psutil.Process(os_pid)
+            if (
+                process_info.is_running()
+                and process_info.create_time() == os_pid_creation_time
+            ):
+                os.kill(os_pid)
 
-        if result:
-            # error = result["error"]
-            # if error.lower().find(CHAT_GPT_RATE_LIMIT_TEXT) >= 0:
-            #     log.warning(
-            #         log_pid
-            #         + f"ChatGPT rate limit. Waiting {CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR}s. {error}"
-            #     )
-            break
-        else:
-            log.warning(log_pid + f"ChatGPT hang on. Restarted {attempt} time(s)")
-            time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
+    result["error"] = "Too much attempts to get data"
     return result
 
 
