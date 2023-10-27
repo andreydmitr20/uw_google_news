@@ -83,26 +83,32 @@ async def news_scraper(result: dict):
 
         # send to chatgpt
         try:
-            log.info(log_pid + "chatGPT: has started")
-            messages = [
-                {
-                    "role": "user",
-                    "content": f"This is a text of one news: {news_text}",
-                },
-                {
-                    "role": "user",
-                    "content": f"""Please make a digest of this news,
+            chatgpt_data = {
+                "answer": "",
+                "error": "",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"This is a text of one news: {news_text}",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""Please make a digest of this news,
                     strictly no more than {MAX_SMS_LENGTH_IN_CHARS} 
                     characters in English, without internet links.""",
-                },
-                {
-                    "role": "user",
-                    "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required. And without noting characters count.",
-                },
-            ]
-            answer = await ask_chatgpt(messages)
-            # log.info(log_pid + "chatGPT: " + f" {answer}")
-            sms_text = answer["answer"]["content"]
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Make it under {MAX_SMS_LENGTH_IN_CHARS}. That is required. And without noting characters count.",
+                    },
+                ],
+            }
+            await ask_chatgpt(chatgpt_data)
+            # log.info(log_pid + "chatGPT: " + f" {chatgpt_data['answer']}")
+            if chatgpt_data["error"] != "":
+                log.error(log_pid + "chatGPT: " + f"Error: {chatgpt_data['error']}")
+                continue
+            sms_text = chatgpt_data["answer"]
             # log.info(log_pid + f">>>{search_text}>>>{sms_text}")
 
             # check sms
