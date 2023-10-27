@@ -7,7 +7,7 @@ from queue import Queue
 from unittest import result
 
 import openai
-from mylib.log import log, d
+from .mylib.log import log, d
 import concurrent.futures
 
 

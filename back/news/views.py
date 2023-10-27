@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views import View
 from .serializers import EmptySerializer
+from tasks.news.news import news_scraper
+
 
 PERMISSION_CLASSES = [AllowAny]
 # PERMISSION_CLASSES=[IsAuthenticated]
@@ -30,6 +32,45 @@ class CheckView(GenericAPIView):
     def get(self, request, format=None):
         # result = get_page(request.GET.get("url"))
         return Response([{"api_status": "ok"}], status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=["get one news by search text"])
+class ScrapeView(GenericAPIView):
+    """ScrapeView"""
+
+    permission_classes = [AllowAny]
+    queryset = []
+    serializer_class = EmptySerializer
+
+    @extend_schema(
+        description="scrape one news",
+        parameters=[
+            OpenApiParameter("search", description="search text for news"),
+        ],
+    )
+    def get(self, request, format=None):
+        search_text = request.GET.get("search")
+        if search_text:
+            input_data = {"error": "", "search_text": search_text, "sms_text": ""}
+            print(">1>")
+            result = news_scraper.delay(input_data)
+            print(">2>")
+
+            try:
+                print(">3>")
+
+                output_data = result.get(timeout=40)
+                return Response(
+                    [{"result": output_data["sms_text"]}], status=status.HTTP_200_OK
+                )
+            except Exception as exception:
+                return Response(
+                    [{"error": f"{exception}"}], status=status.HTTP_404_NOT_FOUND
+                )
+
+        return Response(
+            [{"error": "no param 'search'"}], status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class TestNewsView(View):

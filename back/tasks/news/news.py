@@ -1,11 +1,11 @@
 import asyncio
 import os
 
-from chatgpt import ask_chatgpt, is_chatgpt_error_rate_limit
-from GoogleNewsScraper import GoogleNewsScraper
-from mylib.log import d, log
-from mylib.selenium_lib import selenium_connect, selenium_disconnect
-from mylib.test_services import (
+from .chatgpt import ask_chatgpt, is_chatgpt_error_rate_limit
+from .GoogleNewsScraper import GoogleNewsScraper
+from .mylib.log import d, log
+from .mylib.selenium_lib import selenium_connect, selenium_disconnect
+from .mylib.test_services import (
     SERVICE_POSTGRESQL,
     SERVICE_RABBITMQ,
     SERVICE_REDIS,
@@ -55,7 +55,7 @@ MAX_CHARS_IN_NEWS_TEXT = 3000
 
 
 @shared_task
-def news_scraper(result: dict):
+def news_scraper(result: dict) -> dict:
     log_pid = f"news-{os.getpid()}: "
 
     search_text = result["search_text"]
@@ -111,7 +111,7 @@ def news_scraper(result: dict):
             if error != "":
                 if is_chatgpt_error_rate_limit(error):
                     result["error"] = error
-                    return
+                    return result
                 log.error(log_pid + "chatGPT: " + f"Error: {error}")
                 continue
             sms_text = chatgpt_data_result["answer"]
@@ -143,6 +143,7 @@ def news_scraper(result: dict):
         break
 
     result["sms_text"] = sms_text
+    return result
 
 
 if __name__ == "__main__":

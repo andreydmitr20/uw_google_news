@@ -2,8 +2,8 @@ import asyncio
 from urllib.parse import urlencode
 from selenium.webdriver import ActionChains
 
-from mylib.log import current_utc_date_int, d, int_utc_to_str, log
-from MySelenium import MySelenium
+from .mylib.log import current_utc_date_int, d, int_utc_to_str, log
+from .MySelenium import MySelenium
 
 
 # GOOGLE_NEWS_TYPES = {
