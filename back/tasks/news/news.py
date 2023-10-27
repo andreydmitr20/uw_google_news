@@ -14,6 +14,7 @@ from mylib.test_services import (
 )
 
 from config import config
+from celery import shared_task
 
 GOOGLE_NEWS_TYPE_WORLD = "World News"
 GOOGLE_NEWS_TYPE_TECH = "Tech & Innovation"
@@ -53,6 +54,7 @@ MAX_SMS_LENGTH_IN_CHARS = 160
 MAX_CHARS_IN_NEWS_TEXT = 3000
 
 
+@shared_task
 async def news_scraper(result: dict):
     log_pid = f"news-{os.getpid()}: "
 

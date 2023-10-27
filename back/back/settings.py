@@ -168,9 +168,11 @@ STATIC_ROOT = BASE_DIR / "www"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+#  celery -A back  worker --loglevel=info
 CELERY_BROKER_URL = (
-    "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_host") + "/0"
+    "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
 )
 CELERY_RESULT_BACKEND = (
-    "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_host") + "/0"
+    "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
 )
