@@ -23,3 +23,6 @@ class config:
     db_host: str = os.getenv("db_host")
     db_name: str = os.getenv("db_name")
     db_port: str = os.getenv("db_port")
+
+    redis_host = os.getenv("redis_host")
+    redis_port = os.getenv("redis_port")
