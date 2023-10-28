@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "rest_framework_simplejwt",
+    "django_celery_beat",
+    "django_celery_results",
     "news",
 ]
 
@@ -173,6 +175,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CELERY_BROKER_URL = (
     "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
 )
-CELERY_RESULT_BACKEND = (
-    "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
-)
+# CELERY_RESULT_BACKEND = (
+#     "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
+# )
+# save Celery task results in Django's database
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+# this allows you to schedule items in the Django admin.
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"
+# print(">>>>>>>>>>" + CELERY_BROKER_URL)
+CELERY_IMPORTS = ("tasks.test", "tasks.news.news")
