@@ -175,11 +175,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CELERY_BROKER_URL = (
     "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
 )
-# CELERY_RESULT_BACKEND = (
-#     "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
-# )
+CELERY_RESULT_BACKEND = (
+    "redis://" + os.getenv("redis_host") + ":" + os.getenv("redis_port") + "/0"
+)
 # save Celery task results in Django's database
-CELERY_RESULT_BACKEND = "django-db"
+# CELERY_RESULT_BACKEND = "django-db"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

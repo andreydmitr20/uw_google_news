@@ -55,11 +55,14 @@ MAX_CHARS_IN_NEWS_TEXT = 3000
 
 
 @shared_task
-def news_scraper(result: dict) -> dict:
+def news_scraper(search_text: str) -> dict:
     log_pid = f"news-{os.getpid()}: "
 
-    search_text = result["search_text"]
-    sms_text = ""
+    result = {
+        "search_text": search_text,
+        "sms_text": "",
+        "error": "",
+    }
 
     attempt = 0
     while attempt < 5:
