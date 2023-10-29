@@ -1,0 +1,23 @@
+name: Deploy branch develop
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker build and up on remote host
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.NEWS1_HOST }}
+          port: ${{ secrets.NEWS1_PORT }}
+          username: ${{ secrets.NEWS1_USER }}
+          password: ${{ secrets.NEWS1_PASS }}
+          script: |
+            cd ${{ secrets.NEWS1_PATH }}
+            git pull
+            docker compose -f server.yml up --build -d
+            docker ps -a
