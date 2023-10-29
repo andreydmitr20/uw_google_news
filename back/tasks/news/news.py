@@ -60,6 +60,7 @@ def news_scraper(search_text: str) -> dict:
 
     result = {
         "search_text": search_text,
+        "news_url": "",
         "sms_text": "",
         "error": "",
     }
@@ -82,10 +83,10 @@ def news_scraper(search_text: str) -> dict:
             log.error(log_pid + f"{exception}")
         finally:
             asyncio.run(selenium_disconnect(selenium_driver))
-        news_text = news_scraper.get_news_text()[1:MAX_CHARS_IN_NEWS_TEXT]
+        news_text = news_scraper.get_news_text()[0:MAX_CHARS_IN_NEWS_TEXT]
         if news_text.strip() == "":
             continue
-
+        result["news_url"] = news_scraper.get_news_url()
         # send to chatgpt
         try:
             chatgpt_data = {

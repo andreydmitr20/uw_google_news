@@ -38,12 +38,16 @@ class GoogleNewsScraper(MySelenium):
         self.__search_text = ""
         self.__url = ""
         self.__news_text = ""
+        self.__news_url = ""
 
     def get_news_utc_date(self) -> int:
         return self.__news_utc_date
 
     def get_news_text(self) -> str:
         return self.__news_text
+
+    def get_news_url(self) -> str:
+        return self.__news_url
 
     def get_search_text(self) -> str:
         return self.__search_text
@@ -57,6 +61,7 @@ class GoogleNewsScraper(MySelenium):
 
     async def scrape_by_search(self, search_text: str, attempt: int):
         self.__news_text = ""
+        self.__news_url = ""
         self.__search_text = search_text
         self.__url = GOOGLE_NEWS_URL_SEARCH + urlencode({"q": search_text})
         try:
@@ -82,8 +87,11 @@ class GoogleNewsScraper(MySelenium):
             text = ""
             if body:
                 text = body.text
+
             # log.info(__name__ + f" {text}")
             self.__news_text = text
+            self.__news_url = self.current_url()
+
         except Exception as exception:
             log.error(__name__ + f" {exception}")
             self.__news_text = ""
