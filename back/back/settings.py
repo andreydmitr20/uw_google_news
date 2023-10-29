@@ -160,7 +160,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "www/"
+STATIC_URL = "/www/"
 STATIC_ROOT = BASE_DIR / "www"
 # print(f">>>>{STATIC_ROOT}")
 

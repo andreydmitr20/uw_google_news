@@ -8,9 +8,10 @@ services:
     image: selenium/standalone-chrome:latest
     shm_size: "2gb"
     restart: always
-
+    expose:
+      - "${selenium_port}"
     ports:
-      - "${selenium_port}:4444"
+      # - "${selenium_port}:4444"
       # secret
       - "7900:7900"
     logging:
