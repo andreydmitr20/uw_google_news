@@ -81,11 +81,13 @@
 
         <button type="submit" id="btn-login">Login</button>
       </form>
+      <p id="login-error" class="color-1"></p>
     </div>
 
     <script type="text/javascript">
       const API_URL_PREFIX = "api/";
       const API_URL_LOCAL = "http://127.0.0.1:8000/" + API_URL_PREFIX;
+      const TOKEN_ACCESS_ITEM_NAME = "news_access_token";
 
       const getApiUrl = () => {
         let link = window.location.href.toLowerCase();
@@ -102,7 +104,6 @@
       };
       const clickLogin = (event) => {
         event.preventDefault();
-        let loginContainer = document.getElementById("login-container");
         tokenApiUrl = getApiUrl() + "token/";
         console.log(tokenApiUrl);
 
@@ -128,18 +129,22 @@
         fetch(tokenApiUrl, request)
           .then((response) => {
             if (response.status !== 200) {
-              throw new Error("Non-200 status code received");
+              throw new Error("Status code ${response.status} received");
             }
-            return response.json(); // Assuming you want to parse JSON response
+            return response.json();
           })
           .then((data) => {
-            // Process the data if the response was successful (status 200)
+            sessionStorage.setItem(TOKEN_ACCESS_ITEM_NAME, data.access);
             console.log(data);
+            document.getElementById("login-error").innerHTML = "";
+            document.getElementById("login-container").classList.add("hide");
+            document.getElementById("test-container").classList.remove("hide");
           })
           .catch((error) => {
             console.error(error);
+            document.getElementById("login-error").innerHTML =
+              "Wrong username or password";
           });
-        // loginContainer.classList.add("hide");
       };
 
       const start = () => {
