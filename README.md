@@ -27,6 +27,7 @@ redis_host=redis
 <p>docker compose -f server.yml up --build</p>
 
 <h2>.env example</h2>
+
 <p>
 selenium_host=localhost
 db_host=localhost
