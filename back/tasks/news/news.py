@@ -62,7 +62,7 @@ def news_scraper(search_text: str) -> dict:
         "search_text": search_text,
         "news_url": "",
         "sms_text": "",
-        "error": "",
+        "error": "External error",
     }
 
     attempt = 0
@@ -146,6 +146,7 @@ def news_scraper(search_text: str) -> dict:
         except Exception as exception:
             log.error(log_pid + f"{exception}")
 
+        result["error"] = ""
         break
 
     result["sms_text"] = sms_text
