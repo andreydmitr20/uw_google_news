@@ -9,6 +9,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Docker build and up on remote host
         uses: appleboy/ssh-action@master
         with:
@@ -19,6 +21,7 @@ jobs:
           script: |
             mkdir -p ${{ secrets.NEWS1_PATH }}
             cd ${{ secrets.NEWS1_PATH }}
+
             git pull
             docker compose -f server.yml up --build -d
             docker ps -a
