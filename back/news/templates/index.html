@@ -71,7 +71,7 @@
   <body class="bg-color-a1">
     <!-- <h1>Test News API</h1> -->
     <div class="login-container bg-color-a3" id="login-container">
-      <form id="login">
+      <form id="login-form" method="post">
         <h2>Test News API Login</h2>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required />
@@ -79,14 +79,76 @@
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required />
 
-        <button type="submit">Login</button>
+        <button type="submit" id="btn-login">Login</button>
       </form>
     </div>
 
     <script type="text/javascript">
-      const start = () => {
+      const API_URL_PREFIX = "api/";
+      const API_URL_LOCAL = "http://127.0.0.1:8000/" + API_URL_PREFIX;
+
+      const getApiUrl = () => {
+        let link = window.location.href.toLowerCase();
+        if (link.indexOf("file:") === 0) {
+          return API_URL_LOCAL;
+        } else {
+          if (link.indexOf("www.") !== -1) link = link.replace("www.", "");
+          let colonIndex = link.indexOf(":");
+          let thirdSlashIndex = link.indexOf("/", colonIndex + 3);
+          if (thirdSlashIndex === -1) thirdSlashIndex = 10000;
+          link = link.substring(0, thirdSlashIndex) + "/" + API_URL_PREFIX;
+          return link;
+        }
+      };
+      const clickLogin = (event) => {
+        event.preventDefault();
         let loginContainer = document.getElementById("login-container");
-        loginContainer.classList.add("hide");
+        tokenApiUrl = getApiUrl() + "token/";
+        console.log(tokenApiUrl);
+
+        let headers = {
+          "Content-Type": "application/json",
+        };
+        let request = {
+          method: "post",
+
+          mode: "cors", // no-cors, *cors, same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: headers,
+          redirect: "follow", // manual, *follow, error
+          referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        };
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+        request["body"] = JSON.stringify({
+          username: username,
+          password: password,
+        });
+        fetch(tokenApiUrl, request)
+          .then((response) => {
+            if (response.status !== 200) {
+              throw new Error("Non-200 status code received");
+            }
+            return response.json(); // Assuming you want to parse JSON response
+          })
+          .then((data) => {
+            // Process the data if the response was successful (status 200)
+            console.log(data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        // loginContainer.classList.add("hide");
+      };
+
+      const start = () => {
+        // let loginContainer = document.getElementById("login-container");
+        // let btnLogin = document.getElementById("btn-login");
+        // btnLogin.addEventListener("click", (event) => clickLogin(event));
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", (event) => clickLogin(event));
       };
       document.addEventListener("DOMContentLoaded", start());
     </script>
