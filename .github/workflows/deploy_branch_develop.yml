@@ -9,8 +9,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Clone repository on remote host
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.NEWS1_HOST }}
+          port: ${{ secrets.NEWS1_PORT }}
+          username: ${{ secrets.NEWS1_USER }}
+          password: ${{ secrets.NEWS1_PASS }}
+          script: |
+            git clone git@github.com:andreydmitr20/uw_google_news.git ${{ secrets.NEWS1_PATH }}
+            cd ${{ secrets.NEWS1_PATH }}
+
       - name: Docker build and up on remote host
         uses: appleboy/ssh-action@master
         with:
@@ -19,9 +28,7 @@ jobs:
           username: ${{ secrets.NEWS1_USER }}
           password: ${{ secrets.NEWS1_PASS }}
           script: |
-            mkdir -p ${{ secrets.NEWS1_PATH }}
             cd ${{ secrets.NEWS1_PATH }}
-
             git pull
             docker compose -f server.yml up --build -d
             docker ps -a
