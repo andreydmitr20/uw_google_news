@@ -158,7 +158,7 @@
               rows="8"
               readonly
             ></textarea>
-            <a id="link-field" class="link-field text-center m4" href=""
+            <a id="linkField" class="link-field text-center m4" href=""
               >The original article link</a
             >
           </div>
@@ -246,8 +246,14 @@
           })
           .then((data) => {
             console.log(data);
-            // document.getElementById("login-error").innerHTML = "";
-            // document.getElementById("login-container").classList.add("hide");
+            data = data[0];
+            if (data["error"] !== "") {
+              throw new Error(data["error"]);
+            }
+            document.getElementById("textareaInput").innerHTML =
+              data["sms_text"];
+            linkField = document.getElementById("linkField");
+            linkField.href = data["news_url"];
             searchResult.classList.remove("hide");
             progressContainer.classList.add("hide");
           })
