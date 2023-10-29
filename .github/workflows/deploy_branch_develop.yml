@@ -17,6 +17,7 @@ jobs:
           username: ${{ secrets.NEWS1_USER }}
           password: ${{ secrets.NEWS1_PASS }}
           script: |
+            mkdir -p ${{ secrets.NEWS1_PATH }}
             cd ${{ secrets.NEWS1_PATH }}
             git pull
             docker compose -f server.yml up --build -d
