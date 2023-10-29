@@ -10,7 +10,7 @@ services:
     restart: always
 
     ports:
-      - "${db_port}:4444"
+      - "${selenium_port}:4444"
       # secret
       - "7900:7900"
     logging:
@@ -54,10 +54,10 @@ services:
     env_file: .env
     image: redis:6
     restart: always
-    ports:
-      - "${redis_port}:6379"
-    # expose:
-    #   - "${redis_port}"
+    # ports:
+    #   - "${redis_port}:6379"
+    expose:
+      - "${redis_port}"
     mem_limit: 500M
     mem_reservation: 100m
     cpus: 0.3
