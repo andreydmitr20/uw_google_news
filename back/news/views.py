@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from django.views import View
 from .serializers import EmptySerializer
 from tasks.news.news import news_scraper
-
+from tasks.news.mylib.log import log
 
 PERMISSION_CLASSES = [AllowAny]
 # PERMISSION_CLASSES=[IsAuthenticated]
@@ -38,7 +38,10 @@ class CheckView(GenericAPIView):
 class ScrapeView(GenericAPIView):
     """ScrapeView"""
 
-    permission_classes = [AllowAny]
+    NEWS_SCRAPER_SECONDS_TIMEOUT = 80
+    # permission_classes = [IsAuthenticated]
+    PERMISSION_CLASSES = [AllowAny]
+
     queryset = []
     serializer_class = EmptySerializer
 
@@ -51,14 +54,16 @@ class ScrapeView(GenericAPIView):
     def get(self, request, format=None):
         search_text = request.GET.get("search")
         if search_text:
-            print(">1>")
-            result = news_scraper.delay(search_text)
-            print(">2>")
-
             try:
-                print(">3>")
+                log.info(
+                    "django:"
+                    + self.__class__.__name__
+                    + f" news_scraper('{search_text}') has started. Timeout:{self.NEWS_SCRAPER_SECONDS_TIMEOUT}s"
+                )
+                result = news_scraper.delay(search_text)
+                # print(">2>")
 
-                output_data = result.get(timeout=80)
+                output_data = result.get(timeout=self.NEWS_SCRAPER_SECONDS_TIMEOUT)
                 if output_data and isinstance(output_data, dict):
                     return Response([output_data], status=status.HTTP_200_OK)
                 raise Exception("Bad result")

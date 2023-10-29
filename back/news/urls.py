@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import CheckView, TestNewsView, ScrapeView
 
+
 urlpatterns = [
     path("api/check/", CheckView.as_view(), name="check_ok"),
     path(

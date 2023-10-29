@@ -47,7 +47,7 @@ CHAT_GPT_RATE_LIMIT_TEXT = "RateLimitError".lower()
 
 def ask_chatgpt_worker(chatgpt_data: dict):
     try:
-        d(1)
+        # d(1)
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             temperature=0.7,
@@ -58,7 +58,7 @@ def ask_chatgpt_worker(chatgpt_data: dict):
             stop=None,
             messages=chatgpt_data["messages"],
         )
-        d(2)
+        # d(2)
         # log.info(f"==={response}===")
         chatgpt_data["answer"] = response["choices"][0]["message"]["content"]
         chatgpt_data["error"] = ""
@@ -82,7 +82,7 @@ def ask_chatgpt_worker(chatgpt_data: dict):
         # time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
     chatgpt_data["error"] = error
     # log.warning(log_pid + error)
-    d(3)
+    # d(3)
 
 
 def ask_chatgpt(chatgpt_data: dict, log_pid: str = "") -> dict:
