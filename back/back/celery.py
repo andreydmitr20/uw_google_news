@@ -24,6 +24,7 @@ celery_app.autodiscover_tasks()
 # We used CELERY_BEAT_SCHEDULER in settings.py instead of:
 # app.conf.beat_scheduler = ''django_celery_beat.schedulers.DatabaseScheduler'
 
+
 # configured so we can adjust scheduling
 # in the Django admin to manage all
 # Periodic Tasks like below
