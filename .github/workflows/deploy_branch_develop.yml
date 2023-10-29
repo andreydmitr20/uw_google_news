@@ -9,16 +9,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone repository on remote host
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.NEWS1_HOST }}
-          port: ${{ secrets.NEWS1_PORT }}
-          username: ${{ secrets.NEWS1_USER }}
-          password: ${{ secrets.NEWS1_PASS }}
-          script: |
-            git clone git@github.com:andreydmitr20/uw_google_news.git ${{ secrets.NEWS1_PATH }}
-            cd ${{ secrets.NEWS1_PATH }}
+      - name: install ssh keys
+        # check this thread to understand why its needed:
+        # https://stackoverflow.com/a/70447517
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.NEWS1_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.NEWS1_HOST }} > ~/.ssh/known_hosts
+      - name: connect and pull
+        # develop !!
+        run: ssh ${{ secrets.NEWS1_USER}}@${{ secrets.NEWS1_HOST }} "cd ${{ secrets.NEWS1_PATH }} && git checkout develop && git pull && exit"
+      - name: cleanup
+        run: rm -rf ~/.ssh
 
       - name: Docker build and up on remote host
         uses: appleboy/ssh-action@master
