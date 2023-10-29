@@ -10,9 +10,9 @@ services:
     restart: always
 
     ports:
-      - "127.0.0.1:4444:4444"
+      - "${db_port}:4444"
       # secret
-      - "127.0.0.1:7900:7900"
+      - "7900:7900"
     logging:
       options:
         max-size: "10m"
