@@ -11,6 +11,9 @@
       href="{% static 'news/css/colors.css' %}"
     />
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -25,11 +28,23 @@
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
+      .search-container {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
 
-      form {
+      .flex-column {
         display: flex;
         flex-direction: column;
         align-items: center;
+      }
+      .flex-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        align-content: stretch;
       }
 
       h2 {
@@ -66,12 +81,36 @@
       .hide {
         display: none;
       }
+      .text-center {
+        text-align: center;
+      }
+      .m4 {
+        margin: 4px;
+      }
+      .w100 {
+        width: 100%;
+      }
+      .link-field a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .progress-container {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 20px;
+        width: 0;
+        transition: width 1s;
+      }
     </style>
   </head>
   <body class="bg-color-a1">
-    <!-- <h1>Test News API</h1> -->
     <div class="login-container bg-color-a3" id="login-container">
-      <form id="login-form" method="post">
+      <form class="flex-column" id="login-form" method="post">
         <h2>Test News API Login</h2>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required />
@@ -81,12 +120,55 @@
 
         <button type="submit" id="btn-login">Login</button>
       </form>
-      <p id="login-error" class="color-1"></p>
+      <p id="login-error" class="color-1 text-center"></p>
+    </div>
+
+    <div class="search-container bg-color-a4 hide" id="search-container">
+      <form class="flex-column" id="search-form">
+        <div class="search-field">
+          <h2 class="text-center">
+            Retrieve a short news article based<br />
+            on the search text using the API
+          </h2>
+        </div>
+        <div class="w100">
+          <div class="flex-row">
+            <input
+              class="m4"
+              type="text"
+              id="searchInput"
+              name="searchInput"
+              placeholder="Type your search term"
+            />
+            <button type="submit">Search</button>
+          </div>
+          <div id="progress-container" class="hide progress-container m4">
+            <div class="progress-bar bg-color-c3" id="progressBar"></div>
+          </div>
+
+          <div id="searchResult" class="hide flex-column">
+            <label class="text-center m4" for="textareaInput"
+              >A short news article:</label
+            >
+            <textarea
+              class="w100 m4"
+              id="textareaInput"
+              name="textareaInput"
+              placeholder=""
+              rows="8"
+              readonly
+            ></textarea>
+            <a id="link-field" class="link-field text-center m4" href=""
+              >The original article link</a
+            >
+          </div>
+        </div>
+      </form>
+      <p id="search-error" class="color-1 text-center"></p>
     </div>
 
     <script type="text/javascript">
-      const API_URL_PREFIX = "api/";
-      const API_URL_LOCAL = "http://127.0.0.1:8000/" + API_URL_PREFIX;
+      const API_URL_LOCAL = "http://127.0.0.1:8000/";
       const TOKEN_ACCESS_ITEM_NAME = "news_access_token";
 
       const getApiUrl = () => {
@@ -98,14 +180,93 @@
           let colonIndex = link.indexOf(":");
           let thirdSlashIndex = link.indexOf("/", colonIndex + 3);
           if (thirdSlashIndex === -1) thirdSlashIndex = 10000;
-          link = link.substring(0, thirdSlashIndex) + "/" + API_URL_PREFIX;
+          link = link.substring(0, thirdSlashIndex) + "/";
           return link;
         }
       };
+
+      const clickSearch = (event) => {
+        event.preventDefault();
+
+        let searchError = document.getElementById("search-error");
+        searchError.innerHTML = "";
+
+        let searchResult = document.getElementById("searchResult");
+        searchResult.classList.add("hide");
+
+        let progressBar = document.getElementById("progressBar");
+        let progressContainer = document.getElementById("progress-container");
+        // console.dir(progressContainer);
+        progressContainer.classList.remove("hide");
+        let seconds = 80;
+        let increment_bar = progressContainer.clientWidth / seconds;
+        // console.log(`==${increment_bar}`);
+        progressBar.style.width = "0px";
+
+        function increaseProgressBar(seconds_counter) {
+          let newWidth = progressBar.clientWidth + increment_bar;
+          // console.log(`>>${newWidth}`);
+          progressBar.style.width = newWidth + "px";
+          if (seconds_counter === 1) {
+            progressContainer.classList.add("hide");
+            return;
+          }
+          setTimeout(increaseProgressBar, 1000, seconds_counter - 1);
+        }
+
+        increaseProgressBar(seconds);
+
+        let headers = {
+          "Content-Type": "application/json",
+        };
+        headers["Authorization"] =
+          "Bearer " + sessionStorage.getItem(TOKEN_ACCESS_ITEM_NAME);
+        let request = {
+          method: "get",
+
+          mode: "cors", // no-cors, *cors, same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: headers,
+          redirect: "follow", // manual, *follow, error
+          referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        };
+        let search_text = document.getElementById("searchInput").value;
+        ApiUrl =
+          getApiUrl() +
+          "news/api/scrape/?search=" +
+          encodeURIComponent(search_text);
+        console.log(ApiUrl);
+        fetch(ApiUrl, request)
+          .then((response) => {
+            if (response.status !== 200) {
+              throw new Error(`Status code ${response.status} received`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+            // document.getElementById("login-error").innerHTML = "";
+            // document.getElementById("login-container").classList.add("hide");
+            searchResult.classList.remove("hide");
+            progressContainer.classList.add("hide");
+          })
+          .catch((error) => {
+            console.error(error);
+            progressContainer.classList.add("hide");
+
+            searchError.innerHTML = `${error}`;
+          });
+        // searchResult
+      };
+
       const clickLogin = (event) => {
         event.preventDefault();
-        tokenApiUrl = getApiUrl() + "token/";
+        tokenApiUrl = getApiUrl() + "api/token/";
         console.log(tokenApiUrl);
+
+        let loginError = document.getElementById("login-error");
+        loginError.innerHTML = "";
 
         let headers = {
           "Content-Type": "application/json",
@@ -138,24 +299,24 @@
             console.log(data);
             document.getElementById("login-error").innerHTML = "";
             document.getElementById("login-container").classList.add("hide");
-            document.getElementById("test-container").classList.remove("hide");
+            document
+              .getElementById("search-container")
+              .classList.remove("hide");
           })
           .catch((error) => {
             console.error(error);
-            document.getElementById("login-error").innerHTML =
-              "Wrong username or password";
+            loginError.innerHTML = "Wrong username or password";
           });
       };
 
-      const start = () => {
-        // let loginContainer = document.getElementById("login-container");
-        // let btnLogin = document.getElementById("btn-login");
-        // btnLogin.addEventListener("click", (event) => clickLogin(event));
+      document.addEventListener("DOMContentLoaded", () => {
         document
           .getElementById("login-form")
           .addEventListener("submit", (event) => clickLogin(event));
-      };
-      document.addEventListener("DOMContentLoaded", start());
+        document
+          .getElementById("search-form")
+          .addEventListener("submit", (event) => clickSearch(event));
+      });
     </script>
   </body>
 </html>
