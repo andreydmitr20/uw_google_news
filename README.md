@@ -31,12 +31,10 @@ redis_host=redis
 selenium_host=localhost
 db_host=localhost
 redis_host=localhost
-api_path=http://localhost:8000/api
 
 #selenium_host=selenium
 #db_host=db
 #redis_host=redis
-#api_path=http://back:8000/api
 
 openai_api_key = ...
 
