@@ -51,18 +51,17 @@ class ScrapeView(GenericAPIView):
     def get(self, request, format=None):
         search_text = request.GET.get("search")
         if search_text:
-            input_data = {"error": "", "search_text": search_text, "sms_text": ""}
             print(">1>")
-            result = news_scraper.delay(input_data)
+            result = news_scraper.delay(search_text)
             print(">2>")
 
             try:
                 print(">3>")
 
-                output_data = result.get(timeout=40)
-                return Response(
-                    [{"result": output_data["sms_text"]}], status=status.HTTP_200_OK
-                )
+                output_data = result.get(timeout=80)
+                if output_data and isinstance(output_data, dict):
+                    return Response([output_data], status=status.HTTP_200_OK)
+                raise Exception("Bad result")
             except Exception as exception:
                 return Response(
                     [{"error": f"{exception}"}], status=status.HTTP_404_NOT_FOUND
