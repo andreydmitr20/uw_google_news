@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import CheckView, TestNewsView, ScrapeView
+from .views import CheckView, TestNewsView, ScrapeView, ClientsView
 
 
 urlpatterns = [
@@ -8,6 +8,11 @@ urlpatterns = [
         "api/scrape/",
         ScrapeView.as_view(),
         name="scrape one news by search text",
+    ),
+    path(
+        "api/client/<int:clients_id>/",
+        ClientsView.as_view(),
+        name="clients",
     ),
     path("", TestNewsView.as_view(), name="test_news"),
 ]

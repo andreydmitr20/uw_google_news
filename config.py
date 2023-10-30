@@ -11,6 +11,7 @@ class config:
     """common config constants"""
 
     openai_api_key: str = os.getenv("openai_api_key")
+    webflow_api_token: str = os.getenv("webflow_api_token")
 
     selenium_host = os.getenv("selenium_host")
     selenium_prefix = os.getenv("selenium_prefix")

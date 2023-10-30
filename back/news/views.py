@@ -1,15 +1,33 @@
 from django.db.models import F, Q
 from django.shortcuts import render
+from django.views import View
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.views import View
-from .serializers import EmptySerializer
-from tasks.news.news import news_scraper
 from tasks.news.mylib.log import log
+from tasks.news.news import news_scraper
+
+from .models import Clients
+from .serializers import ClientsSerializer, EmptySerializer
+from utils.views_functions import (
+    API_TEXT_SEARCH,
+    API_TEXT_SHORT,
+    delete_simple,
+    filter_params_simple,
+    filter_simple,
+    get_int_request_param,
+    insert_simple,
+    order_simple,
+    pagination_simple,
+    print_query,
+    search_simple,
+    select_simple,
+    to_int,
+    update_simple,
+)
 
 PERMISSION_CLASSES = [AllowAny]
 # PERMISSION_CLASSES=[IsAuthenticated]
@@ -39,8 +57,8 @@ class ScrapeView(GenericAPIView):
     """ScrapeView"""
 
     NEWS_SCRAPER_SECONDS_TIMEOUT = 120
-    # permission_classes = [IsAuthenticated]
-    PERMISSION_CLASSES = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    # PERMISSION_CLASSES = [AllowAny]
 
     queryset = []
     serializer_class = EmptySerializer
@@ -85,3 +103,72 @@ class TestNewsView(View):
 
         # Rendering the HTML file
         return render(request, "index.html", context={"variable": "value"})
+
+
+@extend_schema(tags=["clients"])
+class ClientsView(APIView):
+    """ClientsView"""
+
+    # permission_classes = [IsAuthenticated]
+    PERMISSION_CLASSES = [AllowAny]
+
+    serializer_class = ClientsSerializer
+    model = Clients
+
+    @extend_schema(
+        description="clients_id=0 retrieve all records before applying filters",
+        parameters=[
+            OpenApiParameter("search", description=""),
+            OpenApiParameter("page", description=""),
+            OpenApiParameter("page_size"),
+            OpenApiParameter("day_of_week"),
+        ],
+    )
+    def get(self, request, clients_id=0, format=None):
+        """get"""
+        return Response([], status=status.HTTP_200_OK)
+        # if clients_id==0:
+
+        # else:
+
+        # if request.query_params.get(API_TEXT_SHORT, "0") == "1"
+        #     else serializer_class
+        # )
+
+        # fields = serializer_class_local.Meta.fields
+        # queryset = (
+        #     model.objects.all()
+        #     if isinstance(fields, str)
+        #     else model.objects
+        #     # inner join
+        #     # .select_related('user')
+        #     .values(*fields)
+        # )
+
+        # queryset = filter_simple(queryset, "pk", id)
+
+        # if not request.query_params.get(API_TEXT_SEARCH) is None:
+        #     if search_field is None:
+        #         Response([], status=status.HTTP_400_BAD_REQUEST)
+        #     else:
+        #         queryset = search_simple(
+        #             queryset, request.query_params.get(API_TEXT_SEARCH), search_field
+        #         )
+
+        # queryset = order_simple(queryset, order_field)
+
+        # print_query(is_print_query, queryset)
+
+        # return pagination_simple(request, serializer_class_local, queryset)
+
+    def post(self, request, clients_id=0, format=None):
+        """post"""
+        return insert_simple(self.serializer_class, request.data)
+
+    def put(self, request, clients_id=0, format=None):
+        """put"""
+        return update_simple(self.model, request, clients_id, self.serializer_class)
+
+    def delete(self, request, clients_id=0, format=None):
+        """delete"""
+        return delete_simple(self.model, Q(pk=clients_id))

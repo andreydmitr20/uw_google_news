@@ -44,8 +44,8 @@ GOOGLE_NEWS_TYPE = [
 
 
 SMS_STOP_KEYPHRASE_LIST = [
-    "sex".lower(),
-    "(160 characters)".lower(),
+    # "sex".lower(),
+    " characters)".lower(),
     "News not available in your country".lower(),
     "Content unavailable".lower(),
     "I can't generate the story".lower(),
