@@ -17,66 +17,17 @@ class Clients(models.Model):
         default="",
     )
     news_type = models.CharField(
-        max_length=200,
+        max_length=20,
         null=False,
         blank=True,
-        default="",
+        default="w",
     )
-    monday = models.CharField(
-        max_length=5,
+    days_in_week = models.IntegerField(
         null=False,
         blank=True,
         db_index=True,  # non unique index
         unique=False,
-        default="",
-    )
-    tuesday = models.CharField(
-        max_length=5,
-        null=False,
-        blank=True,
-        db_index=True,  # non unique index
-        unique=False,
-        default="",
-    )
-    wednesday = models.CharField(
-        max_length=5,
-        null=False,
-        blank=True,
-        db_index=True,  # non unique index
-        unique=False,
-        default="",
-    )
-    thursday = models.CharField(
-        max_length=5,
-        null=False,
-        blank=True,
-        db_index=True,  # non unique index
-        unique=False,
-        default="",
-    )
-    friday = models.CharField(
-        max_length=5,
-        null=False,
-        blank=True,
-        db_index=True,  # non unique index
-        unique=False,
-        default="",
-    )
-    saturday = models.CharField(
-        max_length=5,
-        null=False,
-        blank=True,
-        db_index=True,  # non unique index
-        unique=False,
-        default="",
-    )
-    sunday = models.CharField(
-        max_length=5,
-        null=False,
-        blank=True,
-        db_index=True,  # non unique index
-        unique=False,
-        default="",
+        default="1",
     )
     phone = models.CharField(
         max_length=100,
@@ -85,12 +36,6 @@ class Clients(models.Model):
         # unique=True,
         default="",
     )
-    # is_bad = models.BooleanField(
-    #     null=False,
-    #     blank=True,
-    #     # unique=True,
-    #     default=False,
-    # )
     utc_created = models.BigIntegerField(null=False, blank=True, default=0)
     utc_updated = models.BigIntegerField(null=False, blank=True, default=0)
     utc_payed = models.BigIntegerField(null=False, blank=True, default=0)

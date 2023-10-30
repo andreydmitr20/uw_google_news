@@ -2,11 +2,9 @@ PREFIX_NEWS1 = "news1_";
 const emailChange = (event, email) => {
   sessionStorage.setItem(PREFIX_NEWS1 + "email", email.value);
 };
+
 const collectEmail = () => {
-  sessionStorage.setItem(PREFIX_NEWS1 + "email", "");
-  sessionStorage.setItem(PREFIX_NEWS1 + "news_type", "");
-  sessionStorage.setItem(PREFIX_NEWS1 + "days_in_week", "");
-  sessionStorage.setItem(PREFIX_NEWS1 + "phone", "");
+  sessionStorage.setItem(PREFIX_NEWS1 + "email", "test@test.com");
 
   let email = document.querySelector('input[type="email"]');
   if (email === null) {
@@ -54,11 +52,15 @@ const get_my_headlines = (event) => {
     redirect: "follow",
     referrerPolicy: "no-referrer",
   };
+
+  let currentDate = new Date();
+  let utc_now_int = Math.floor(currentDate.getTime() / 1000);
   request["body"] = JSON.stringify({
     email: sessionStorage.getItem(PREFIX_NEWS1 + "email"),
     news_type: sessionStorage.getItem(PREFIX_NEWS1 + "news_type"),
     days_in_week: sessionStorage.getItem(PREFIX_NEWS1 + "days_in_week"),
     phone: sessionStorage.getItem(PREFIX_NEWS1 + "phone"),
+    utc_created: utc_now_int,
   });
   fetch("http://185.235.130.227:8000/news/api/client/0/", request)
     .then((response) => {
@@ -80,8 +82,9 @@ const get_my_headlines = (event) => {
 };
 
 const collectInterests = () => {
-  console.log("collectInterests");
-
+  sessionStorage.setItem(PREFIX_NEWS1 + "news_type", "");
+  sessionStorage.setItem(PREFIX_NEWS1 + "days_in_week", "");
+  sessionStorage.setItem(PREFIX_NEWS1 + "phone", "");
   let itemw = document.getElementById("World-News");
   itemw.addEventListener("change", (event) =>
     checkbox_change(event, itemw, "w")
