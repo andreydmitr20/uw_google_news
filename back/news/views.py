@@ -38,7 +38,7 @@ class CheckView(GenericAPIView):
 class ScrapeView(GenericAPIView):
     """ScrapeView"""
 
-    NEWS_SCRAPER_SECONDS_TIMEOUT = 80
+    NEWS_SCRAPER_SECONDS_TIMEOUT = 120
     # permission_classes = [IsAuthenticated]
     PERMISSION_CLASSES = [AllowAny]
 
