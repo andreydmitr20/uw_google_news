@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import CheckView, TestNewsView, ScrapeView, ClientsView
+from .views import CheckView, TestNewsView, ScrapeView, ClientsView, AddClientView
 
 
 urlpatterns = [
@@ -13,6 +13,11 @@ urlpatterns = [
         "api/client/<int:clients_id>/",
         ClientsView.as_view(),
         name="clients",
+    ),
+    path(
+        "api/client_add/",
+        AddClientView.as_view(),
+        name="add client",
     ),
     path("", TestNewsView.as_view(), name="test_news"),
 ]

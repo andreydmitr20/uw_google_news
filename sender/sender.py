@@ -85,6 +85,8 @@ def is_between_by_scheduler_index(index: int, hour_minute_int: int) -> bool:
 
 async def get_clients_list(news_type: str, day_of_week: int, log_pid: str) -> list:
     """get_clients_list"""
+    # select * from news_clients
+    # where (days_in_week =1 or days_in_week =2) and news_type like '%w%'
     log_pid += "get_clients_list: "
     attempt = 0
     while attempt < GET_CLIENTS_LIST_ATTEMPTS_MAX:

@@ -109,19 +109,19 @@ class TestNewsView(View):
 class ClientsView(APIView):
     """ClientsView"""
 
-    # permission_classes = [IsAuthenticated]
-    PERMISSION_CLASSES = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    # PERMISSION_CLASSES = [AllowAny]
 
     serializer_class = ClientsSerializer
     model = Clients
 
     @extend_schema(
-        description="clients_id=0 retrieve all records before applying filters",
+        description="",
         parameters=[
             # OpenApiParameter("search", description=""),
             OpenApiParameter("page", description=""),
             OpenApiParameter("page_size"),
-            OpenApiParameter("day_of_week"),
+            # OpenApiParameter("day_of_week"),
         ],
     )
     def get(self, request, clients_id=0, format=None):
@@ -147,3 +147,27 @@ class ClientsView(APIView):
     def delete(self, request, clients_id=0, format=None):
         """delete"""
         return delete_simple(self.model, Q(pk=clients_id))
+
+
+@extend_schema(tags=["clients"])
+class AddClientView(APIView):
+    """AddClientView"""
+
+    # permission_classes = [IsAuthenticated]
+    PERMISSION_CLASSES = [AllowAny]
+
+    serializer_class = ClientsSerializer
+    model = Clients
+
+    @extend_schema(
+        description="",
+        # parameters=[
+        #     # OpenApiParameter("search", description=""),
+        #     OpenApiParameter("page", description=""),
+        #     OpenApiParameter("page_size"),
+        #     # OpenApiParameter("day_of_week"),
+        # ],
+    )
+    def post(self, request, format=None):
+        """post"""
+        return insert_simple(self.serializer_class, request.data)
