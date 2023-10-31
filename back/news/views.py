@@ -105,21 +105,6 @@ class TestNewsView(View):
         return render(request, "index.html", context={"variable": "value"})
 
 
-NEWS_TYPE = {
-    "w": "Today top world news",
-    "t": "Today tech and innovations top news",
-    "b": "Today business and finance top news",
-    "s": "Today science and discovery top news",
-    "h": "Today health and wellness top news",
-    "p": "Today sport top news",
-    "o": "Today politics and government top news",
-    "e": "Today environment and sustainability top news",
-    "n": "Today entertainment and culture top news",
-    "f": "Today food and lifestyle top news",
-    "a": "Today art and fashion top news",
-}
-
-
 @extend_schema(tags=["clients"])
 class ClientsView(APIView):
     """ClientsView"""
