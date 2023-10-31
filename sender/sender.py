@@ -46,7 +46,10 @@ NEWS_TYPE = {
     "a": "Today art and fashion top news",
 }
 
-
+GET_CLIENTS_LIST_ATTEMPTS_MAX = 5
+GET_SMS_TEXT_ATTEMPTS_MAX = 5
+SEND_SMS_ATTEMPTS_MAX = 5
+WAIT_SECONDS_AFTER_ERROR = 5
 # def get_utc_now():
 #     return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
 #         hours=UTC_TIMEDELTA_HOURS
@@ -76,6 +79,57 @@ def is_between_by_scheduler_index(index: int, hour_minute_int: int) -> bool:
             return True
         return hour_minute_int < SCHEDULER_FOR_INTERESTS[index + 1][0]
     return False
+
+
+async def get_clients_list(news_type: str, day_of_week: int, log_pid: str) -> list:
+    """get_clients_list"""
+    log_pid += "get_clients_list: "
+    attempt = 0
+    while attempt < GET_CLIENTS_LIST_ATTEMPTS_MAX:
+        attempt += 1
+
+        try:
+            return [{"phone": "12345"}]
+
+        except Exception as exception:
+            log.warning(log_pid + f"{exception}")
+            time.sleep(WAIT_SECONDS_AFTER_ERROR)
+    log.error(log_pid + f"can not get clients list")
+    return []
+
+
+async def get_sms_text(search_text: str, log_pid: str) -> str:
+    log_pid += "get_sms_text: "
+    attempt = 0
+    while attempt < GET_SMS_TEXT_ATTEMPTS_MAX:
+        attempt += 1
+
+        try:
+            return "test"
+
+        except Exception as exception:
+            log.warning(log_pid + f"{exception}")
+            time.sleep(WAIT_SECONDS_AFTER_ERROR)
+
+    log.error(log_pid + f"can not get sms text")
+    return ""
+
+
+async def send_sms(sms_text: str, client: dict, log_pid: str):
+    """send_sms"""
+    log_pid += "send_sms: "
+    attempt = 0
+    while attempt < SEND_SMS_ATTEMPTS_MAX:
+        attempt += 1
+
+        try:
+            return
+
+        except Exception as exception:
+            log.warning(log_pid + f"{exception}")
+            time.sleep(WAIT_SECONDS_AFTER_ERROR)
+    log.error(log_pid + f"can not send sms")
+    return
 
 
 async def sender():
@@ -122,22 +176,24 @@ async def sender():
         news_type = SCHEDULER_FOR_INTERESTS[scheduler_interests_index][1]
         log.info(log_pid + f"start task for interest '{NEWS_TYPE[news_type]}'")
 
-        # TODO got list clients to whom we will send sms
+        # got list clients to whom we will send sms
         day_of_week = utc_now.weekday() + 1
-        clients_list = [{"phone": "12345"}]
+        clients_list = await get_clients_list(news_type, day_of_week, log_pid)
         clients_list_length = len(clients_list)
         log.info(
             log_pid
             + f"got {clients_list_length} clients for interest '{news_type}' and day of week {day_of_week}"
         )
         if clients_list_length != 0:
-            # TODO get sms_text for interest and day_off_week
-            sms_text = "test"
-            log.info(log_pid + f"got sms text: '{sms_text}'")
+            #  get sms_text for interest and day_off_week
+            sms_text = await get_sms_text(NEWS_TYPE[news_type], log_pid)
+            if sms_text != "":
+                log.info(log_pid + f"got sms text: '{sms_text}'")
 
-            for client in clients_list:
-                log.info(log_pid + f"send sms to client: {client}")
-                # TODO send sms_text for client
+                for client in clients_list:
+                    log.info(log_pid + f"send sms to client: {client}")
+                    # send sms_text for client
+                    await send_sms(sms_text, client, log_pid)
 
         # next task
         scheduler_interests_index += 1
