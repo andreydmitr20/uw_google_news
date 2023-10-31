@@ -27,7 +27,7 @@ class Clients(models.Model):
         blank=True,
         db_index=True,  # non unique index
         unique=False,
-        default="1",
+        default=1,
     )
     phone = models.CharField(
         max_length=100,

@@ -105,6 +105,21 @@ class TestNewsView(View):
         return render(request, "index.html", context={"variable": "value"})
 
 
+NEWS_TYPE = {
+    "w": "Today top world news",
+    "t": "Today tech and innovations top news",
+    "b": "Today business and finance top news",
+    "s": "Today science and discovery top news",
+    "h": "Today health and wellness top news",
+    "p": "Today sport top news",
+    "o": "Today politics and government top news",
+    "e": "Today environment and sustainability top news",
+    "n": "Today entertainment and culture top news",
+    "f": "Today food and lifestyle top news",
+    "a": "Today art and fashion top news",
+}
+
+
 @extend_schema(tags=["clients"])
 class ClientsView(APIView):
     """ClientsView"""
@@ -118,7 +133,7 @@ class ClientsView(APIView):
     @extend_schema(
         description="clients_id=0 retrieve all records before applying filters",
         parameters=[
-            OpenApiParameter("search", description=""),
+            # OpenApiParameter("search", description=""),
             OpenApiParameter("page", description=""),
             OpenApiParameter("page_size"),
             OpenApiParameter("day_of_week"),
@@ -126,40 +141,15 @@ class ClientsView(APIView):
     )
     def get(self, request, clients_id=0, format=None):
         """get"""
-        return Response([], status=status.HTTP_200_OK)
-        # if clients_id==0:
+        if clients_id == 0:
+            return Response([], status=status.HTTP_200_OK)
+        else:
+            queryset = self.model.objects.all()
+            queryset = filter_simple(queryset, "pk", clients_id)
 
-        # else:
+            print_query(True, queryset)
 
-        # if request.query_params.get(API_TEXT_SHORT, "0") == "1"
-        #     else serializer_class
-        # )
-
-        # fields = serializer_class_local.Meta.fields
-        # queryset = (
-        #     model.objects.all()
-        #     if isinstance(fields, str)
-        #     else model.objects
-        #     # inner join
-        #     # .select_related('user')
-        #     .values(*fields)
-        # )
-
-        # queryset = filter_simple(queryset, "pk", id)
-
-        # if not request.query_params.get(API_TEXT_SEARCH) is None:
-        #     if search_field is None:
-        #         Response([], status=status.HTTP_400_BAD_REQUEST)
-        #     else:
-        #         queryset = search_simple(
-        #             queryset, request.query_params.get(API_TEXT_SEARCH), search_field
-        #         )
-
-        # queryset = order_simple(queryset, order_field)
-
-        # print_query(is_print_query, queryset)
-
-        # return pagination_simple(request, serializer_class_local, queryset)
+            return pagination_simple(request, self.serializer_class, queryset)
 
     def post(self, request, clients_id=0, format=None):
         """post"""
