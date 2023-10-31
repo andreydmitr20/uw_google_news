@@ -10,6 +10,7 @@ load_dotenv()
 class config:
     """common config constants"""
 
+    api_path: str = os.getenv("api_path")
     openai_api_key: str = os.getenv("openai_api_key")
     webflow_api_token: str = os.getenv("webflow_api_token")
 
