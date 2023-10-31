@@ -17,7 +17,8 @@ import time
 UTC_TIMEDELTA_HOURS = 1
 
 SCHEDULER_FOR_INTERESTS = [
-    [0, "start"][1000, "w"],
+    [0, "start"],
+    [1000, "w"],
     [1030, "t"],
     [1100, "b"],
     [1130, "s"],
@@ -46,10 +47,27 @@ NEWS_TYPE = {
 }
 
 
+# def get_utc_now():
+#     return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
+#         hours=UTC_TIMEDELTA_HOURS
+#     )
+
+# SLEEP_TIME_IN_SECONDS=60
+SLEEP_TIME_IN_SECONDS = 1
+UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc)
+
+
 def get_utc_now():
-    return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-        hours=UTC_TIMEDELTA_HOURS
-    )
+    global UTC_NOW
+    UTC_NOW = UTC_NOW + timedelta(minutes=10)
+    log.info(f"{get_hour_minute_int(UTC_NOW)}")
+    return UTC_NOW
+
+
+def get_hour_minute_int(utc_now):
+    hour = utc_now.hour
+    minute = utc_now.minute
+    return hour * 100 + minute
 
 
 def is_between_by_scheduler_index(index: int, hour_minute_int: int) -> bool:
@@ -75,10 +93,7 @@ async def sender():
     log.info(log_pid + "started")
 
     utc_now = get_utc_now()
-    utc_date = utc_now.date()
-    hour = utc_now.hour
-    minute = utc_now.minute
-    hour_minute_int = hour * 100 + minute
+    hour_minute_int = get_hour_minute_int(utc_now)
     # skip tasks before current time
     for scheduler_interests_index in range(len(SCHEDULER_FOR_INTERESTS)):
         if is_between_by_scheduler_index(scheduler_interests_index, hour_minute_int):
@@ -93,11 +108,10 @@ async def sender():
             while is_between_by_scheduler_index(
                 scheduler_interests_index, hour_minute_int
             ):
-                time.sleep(60)
+                time.sleep(SLEEP_TIME_IN_SECONDS)
                 utc_now = get_utc_now()
-                hour = utc_now.hour
-                minute = utc_now.minute
-                hour_minute_int = hour * 100 + minute
+                hour_minute_int = get_hour_minute_int(utc_now)
+
             if news_type == "start":
                 scheduler_interests_index += 1
             else:
@@ -129,18 +143,15 @@ async def sender():
         scheduler_interests_index += 1
         # wait for beginning of new period if we should
         utc_now = get_utc_now()
-        hour = utc_now.hour
-        minute = utc_now.minute
-        hour_minute_int = hour * 100 + minute
+        hour_minute_int = get_hour_minute_int(utc_now)
+
         if hour_minute_int < SCHEDULER_FOR_INTERESTS[scheduler_interests_index][0]:
             while not is_between_by_scheduler_index(
                 scheduler_interests_index, hour_minute_int
             ):
-                time.sleep(60)
+                time.sleep(SLEEP_TIME_IN_SECONDS)
                 utc_now = get_utc_now()
-                hour = utc_now.hour
-                minute = utc_now.minute
-                hour_minute_int = hour * 100 + minute
+                hour_minute_int = get_hour_minute_int(utc_now)
 
 
 if __name__ == "__main__":
