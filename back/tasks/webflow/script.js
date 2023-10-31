@@ -62,7 +62,7 @@ const get_my_headlines = (event) => {
     phone: sessionStorage.getItem(PREFIX_NEWS1 + "phone"),
     utc_created: utc_now_int,
   });
-  fetch("https://185.235.130.227:8000/news/api/client_add/", request)
+  fetch("https://185.235.130.227:8000/news/api/client/add/", request)
     .then((response) => {
       if (response.status !== 201) {
         throw new Error(`Status code ${response.status} received`);

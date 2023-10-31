@@ -134,7 +134,16 @@ class ClientsView(APIView):
 
             print_query(True, queryset)
 
-            return pagination_simple(request, self.serializer_class, queryset)
+            try:
+                # Replace the paginator-related code with direct serialization
+                serializer = self.serializer_class(
+                    queryset, many=True, context={"request": request}
+                )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Exception as exception:
+                return Response(
+                    [{"error": f"{exception}"}], status=status.HTTP_400_BAD_REQUEST
+                )
 
     def post(self, request, clients_id=0, format=None):
         """post"""
@@ -171,3 +180,52 @@ class AddClientView(APIView):
     def post(self, request, format=None):
         """post"""
         return insert_simple(self.serializer_class, request.data)
+
+
+@extend_schema(tags=["clients"])
+class ListSMSClientView(APIView):
+    """ListSMSClientView"""
+
+    permission_classes = [IsAuthenticated]
+    # PERMISSION_CLASSES = [AllowAny]
+
+    serializer_class = ClientsSerializer
+    model = Clients
+
+    @extend_schema(
+        description="",
+        parameters=[
+            # OpenApiParameter("search", description=""),
+            OpenApiParameter(
+                "weekday", description="required - day of week: 1- monday, 7 - sunday"
+            ),
+            OpenApiParameter(
+                "interest", description="required - interest: 'w' - world news, etc."
+            ),
+            # OpenApiParameter("day_of_week"),
+        ],
+    )
+    def get(self, request, format=None):
+        """get"""
+        queryset = self.model.objects.all()
+        weekday = request.GET.get("weekday")
+        interest = request.GET.get("interest")
+        if weekday is None or interest is None:
+            return Response(
+                [{"error": f"'weekday' and 'interest' params are required"}],
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # queryset = filter_simple(queryset, "pk", clients_id)
+
+        print_query(True, queryset)
+
+        try:
+            # Replace the paginator-related code with direct serialization
+            serializer = self.serializer_class(
+                queryset, many=True, context={"request": request}
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as exception:
+            return Response(
+                [{"error": f"{exception}"}], status=status.HTTP_400_BAD_REQUEST
+            )

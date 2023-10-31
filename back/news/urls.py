@@ -1,5 +1,12 @@
 from django.urls import path, include
-from .views import CheckView, TestNewsView, ScrapeView, ClientsView, AddClientView
+from .views import (
+    CheckView,
+    TestNewsView,
+    ScrapeView,
+    ClientsView,
+    AddClientView,
+    ListSMSClientView,
+)
 
 
 urlpatterns = [
@@ -15,9 +22,14 @@ urlpatterns = [
         name="clients",
     ),
     path(
-        "api/client_add/",
+        "api/client/add/",
         AddClientView.as_view(),
         name="add client",
+    ),
+    path(
+        "api/client/list/sms/",
+        ListSMSClientView.as_view(),
+        name="list clients for sms sending",
     ),
     path("", TestNewsView.as_view(), name="test_news"),
 ]
