@@ -10,7 +10,10 @@ load_dotenv()
 class config:
     """common config constants"""
 
-    api_path: str = os.getenv("api_path")
+    news_api_path: str = os.getenv("news_api_path")
+    news_api_user: str = os.getenv("news_api_user")
+    news_api_pass: str = os.getenv("news_api_pass")
+
     openai_api_key: str = os.getenv("openai_api_key")
     webflow_api_token: str = os.getenv("webflow_api_token")
 

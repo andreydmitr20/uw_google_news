@@ -11,6 +11,8 @@ from mylib.test_services import (
     SERVICE_SELENIUM,
     test_services,
 )
+from mylib.api_lib import api_get, api_delete, api_post, api_put
+
 import time
 
 # plus time zone
@@ -105,6 +107,17 @@ async def get_sms_text(search_text: str, log_pid: str) -> str:
         attempt += 1
 
         try:
+            # get access token
+            api_url = config.news_api_path + f"api/token/"
+            jwt = await api_post(
+                api_url,
+                data={
+                    "username": config.news_api_user,
+                    "password": config.news_api_pass,
+                },
+            )
+
+            log.info(log_pid + f"{jwt}")
             return "test"
 
         except Exception as exception:
@@ -139,7 +152,7 @@ async def sender():
             # SERVICE_REDIS,
             # SERVICE_POSTGRESQL,
             SERVICE_SELENIUM,
-            config.api_path + "check/",
+            config.news_api_path + "news/api/check/",
         ],
         log_pid,
     )
