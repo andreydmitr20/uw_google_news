@@ -116,9 +116,32 @@ async def get_sms_text(search_text: str, log_pid: str) -> str:
                     "password": config.news_api_pass,
                 },
             )
+            if not (jwt and isinstance(jwt, dict) and "access" in jwt.keys()):
+                raise Exception(f"Can not get access token for {api_url}")
+            # log.info(log_pid + f"{jwt}")
 
-            log.info(log_pid + f"{jwt}")
-            return "test"
+            # get sms_text
+            api_url = config.news_api_path + f"news/api/scrape/"
+            data = await api_get(
+                api_url,
+                params={
+                    "search": search_text,
+                },
+                token=jwt["access"],
+            )
+            if not (
+                data
+                and isinstance(data, list)
+                and len(data) >= 1
+                and isinstance(data[0], dict)
+            ):
+                raise Exception(f"Can not get sms text for {api_url}")
+            result = data[0]
+            if result["sms_text"] != "":
+                return result["sms_text"]
+            if result["error"] != "":
+                raise Exception(result["error"])
+            raise Exception("get empty sms text")
 
         except Exception as exception:
             log.warning(log_pid + f"{exception}")

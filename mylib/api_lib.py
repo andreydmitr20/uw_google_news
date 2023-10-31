@@ -4,9 +4,15 @@ from .config import config
 from .log import log, d
 
 
-async def api_get(url, params=None):
+async def api_get(url, params=None, data=None, token=None):
+    headers = None
+    if token:
+        headers = {"Authorization": f"Bearer {token}"}
+
     async with aiohttp.ClientSession() as api_session:
-        async with api_session.get(url, params=params) as response:
+        async with api_session.get(
+            url, params=params, data=data, headers=headers
+        ) as response:
             if "application/json" in response.headers.get("Content-Type", ""):
                 return await response.json()
             else:
