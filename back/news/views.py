@@ -235,12 +235,19 @@ class ListSMSClientView(APIView):
             weekday = int(weekday)
         except:
             return Response(
-                [{"error": f"'weekday' params should be from 1 to 7 (sunday)"}],
+                [{"error": f"'weekday' param should be from 1 to 7 (sunday)"}],
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        interest = interest.strip().lower()
+        if interest == "" or len(interest) > 1:
+            return Response(
+                [{"error": f"'inerest' param has to be one character like 'w'"}],
                 status=status.HTTP_400_BAD_REQUEST,
             )
         queryset = queryset.filter(
             days_in_week__in=self.get_list_for_days_in_week(weekday)
         )
+        queryset = queryset.filter(news_type__contains=interest)
         print_query(True, queryset)
 
         try:
