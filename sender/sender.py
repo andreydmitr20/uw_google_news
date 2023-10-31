@@ -254,7 +254,7 @@ async def sender():
         log.info(log_pid + f"start task for interest '{NEWS_TYPE[interest]}'")
 
         # got token
-        token = get_token(log_pid)
+        token = await get_token(log_pid)
         if token != "":
             # got list clients to whom we will send sms
             weekday = utc_now.weekday() + 1

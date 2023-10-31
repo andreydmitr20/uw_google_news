@@ -135,7 +135,6 @@ class ClientsView(APIView):
             print_query(True, queryset)
 
             try:
-                # Replace the paginator-related code with direct serialization
                 serializer = self.serializer_class(
                     queryset, many=True, context={"request": request}
                 )
@@ -205,6 +204,23 @@ class ListSMSClientView(APIView):
             # OpenApiParameter("day_of_week"),
         ],
     )
+    def get_list_for_days_in_week(self, weekday: int) -> list:
+        match weekday:
+            case 1:
+                return [3, 7]
+            case 2:
+                return [2, 7]
+            case 3:
+                return [1, 3, 7]
+            case 4:
+                return [2, 7]
+            case 5:
+                return [3, 7]
+            case 6:
+                return [7]
+            case _:
+                return [7]
+
     def get(self, request, format=None):
         """get"""
         queryset = self.model.objects.all()
@@ -215,12 +231,19 @@ class ListSMSClientView(APIView):
                 [{"error": f"'weekday' and 'interest' params are required"}],
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # queryset = filter_simple(queryset, "pk", clients_id)
-
+        try:
+            weekday = int(weekday)
+        except:
+            return Response(
+                [{"error": f"'weekday' params should be from 1 to 7 (sunday)"}],
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        queryset = queryset.filter(
+            days_in_week__in=self.get_list_for_days_in_week(weekday)
+        )
         print_query(True, queryset)
 
         try:
-            # Replace the paginator-related code with direct serialization
             serializer = self.serializer_class(
                 queryset, many=True, context={"request": request}
             )
