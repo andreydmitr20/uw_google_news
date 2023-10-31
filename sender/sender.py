@@ -232,8 +232,8 @@ async def sender():
 
     # main day loop for scheduler_interests_index
     while True:
-        news_type = SCHEDULER_FOR_INTERESTS[scheduler_interests_index][1]
-        if news_type == "start" or news_type == "stop":
+        interest = SCHEDULER_FOR_INTERESTS[scheduler_interests_index][1]
+        if interest == "start" or interest == "stop":
             # wait
             log.info(log_pid + "waiting")
             while is_between_by_scheduler_index(
@@ -243,32 +243,30 @@ async def sender():
                 utc_now = get_utc_now()
                 hour_minute_int = get_hour_minute_int(utc_now)
 
-            if news_type == "start":
+            if interest == "start":
                 scheduler_interests_index += 1
             else:
                 scheduler_interests_index = 0
                 continue
 
         # do task
-        news_type = SCHEDULER_FOR_INTERESTS[scheduler_interests_index][1]
-        log.info(log_pid + f"start task for interest '{NEWS_TYPE[news_type]}'")
+        interest = SCHEDULER_FOR_INTERESTS[scheduler_interests_index][1]
+        log.info(log_pid + f"start task for interest '{NEWS_TYPE[interest]}'")
 
         # got token
         token = get_token(log_pid)
         if token != "":
             # got list clients to whom we will send sms
-            day_of_week = utc_now.weekday() + 1
-            clients_list = await get_clients_list(
-                news_type, day_of_week, token, log_pid
-            )
+            weekday = utc_now.weekday() + 1
+            clients_list = await get_clients_list(interest, weekday, token, log_pid)
             clients_list_length = len(clients_list)
             log.info(
                 log_pid
-                + f"got {clients_list_length} clients for interest '{news_type}' and day of week {day_of_week}"
+                + f"got {clients_list_length} clients for interest '{interest}' and day of week {weekday}"
             )
             if clients_list_length != 0:
                 #  get sms_text for interest and day_off_week
-                sms_text = await get_sms_text(NEWS_TYPE[news_type], token, log_pid)
+                sms_text = await get_sms_text(NEWS_TYPE[interest], token, log_pid)
                 if sms_text != "":
                     log.info(log_pid + f"got sms text: '{sms_text}'")
 

@@ -11,7 +11,7 @@ from tasks.news.mylib.log import log
 from tasks.news.news import news_scraper
 
 from .models import Clients
-from .serializers import ClientsSerializer, EmptySerializer
+from .serializers import ClientsSerializer, EmptySerializer, ListSMSClientSerializer
 from utils.views_functions import (
     API_TEXT_SEARCH,
     API_TEXT_SHORT,
@@ -186,10 +186,10 @@ class AddClientView(APIView):
 class ListSMSClientView(APIView):
     """ListSMSClientView"""
 
-    permission_classes = [IsAuthenticated]
-    # PERMISSION_CLASSES = [AllowAny]
+    # permission_classes = [IsAuthenticated]
+    PERMISSION_CLASSES = [AllowAny]
 
-    serializer_class = ClientsSerializer
+    serializer_class = ListSMSClientSerializer
     model = Clients
 
     @extend_schema(
