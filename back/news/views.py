@@ -179,6 +179,17 @@ class AddClientView(APIView):
     )
     def post(self, request, format=None):
         """post"""
+        phone = (
+            request.data["phone"]
+            .replace("-", "")
+            .replace(")", "")
+            .replace("(", "")
+            .replace(" ", "")
+        )
+        if phone.find("+") != 0:
+            phone = "+1" + phone
+        request.data["phone"] = phone
+
         serializer = self.serializer_class(data=request.data)
         # print(serializer)
         try:
@@ -186,9 +197,9 @@ class AddClientView(APIView):
                 utc_date = datetime.now(timezone.utc)
                 serializer.validated_data["utc_created"] = int(utc_date.timestamp())
                 serializer.validated_data["utc_updated"] = int(utc_date.timestamp())
-                serializer.validated_data["utc_payed"] = int(
-                    (utc_date + timedelta(days=30)).timestamp()
-                )
+                # serializer.validated_data["utc_payed"] = int(
+                #     (utc_date + timedelta(days=30)).timestamp()
+                # )
 
                 serializer.save()
                 return Response(

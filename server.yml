@@ -89,6 +89,21 @@ services:
         max-size: "10m"
         max-file: "1"
 
+  sender:
+    env_file: .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile.sender
+    restart: always
+    depends_on:
+      - back
+    # ports:
+    #   - "8000:8000"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "1"
+
 volumes:
   news-db-data:
     name: news-db-data
