@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from django.db.models import F, Q
 from django.shortcuts import render
 from django.views import View
@@ -178,7 +179,27 @@ class AddClientView(APIView):
     )
     def post(self, request, format=None):
         """post"""
-        return insert_simple(self.serializer_class, request.data)
+        serializer = self.serializer_class(data=request.data)
+        # print(serializer)
+        try:
+            if serializer.is_valid():
+                utc_date = datetime.now(timezone.utc)
+                serializer.validated_data["utc_created"] = int(utc_date.timestamp())
+                serializer.validated_data["utc_updated"] = int(utc_date.timestamp())
+                serializer.validated_data["utc_payed"] = int(
+                    (utc_date + timedelta(days=30)).timestamp()
+                )
+
+                serializer.save()
+                return Response(
+                    [{"clients_id": serializer.data["clients_id"]}],
+                    status=status.HTTP_201_CREATED,
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exception:
+            return Response(
+                [{"error": f"{exception}"}], status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @extend_schema(tags=["clients"])

@@ -33,7 +33,7 @@ class Clients(models.Model):
         max_length=100,
         null=False,
         blank=True,
-        # unique=True,
+        unique=True,
         default="",
     )
     utc_created = models.BigIntegerField(null=False, blank=True, default=0)
