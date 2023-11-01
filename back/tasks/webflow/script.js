@@ -60,20 +60,20 @@ const get_my_headlines = (event) => {
     news_type: sessionStorage.getItem(PREFIX_NEWS1 + "news_type"),
     days_in_week: sessionStorage.getItem(PREFIX_NEWS1 + "days_in_week"),
     phone: sessionStorage.getItem(PREFIX_NEWS1 + "phone"),
-    utc_created: utc_now_int,
   });
+  let response_status = None;
   fetch("https://185.235.130.227:8000/news/api/client/add/", request)
     .then((response) => {
-      if (response.status !== 201) {
-        throw new Error(`Status code ${response.status} received`);
+      response_status = response.status;
+      if (response_status < 200 || response_status >= 500) {
+        throw new Error(`Status code ${response_status} received`);
       }
       return response.json();
     })
     .then((data) => {
       console.log(data);
-      data = data[0];
-      if (data["error"] !== "") {
-        throw new Error(data["error"]);
+      if (response_status != 201) {
+        throw new Error(data[0]);
       }
     })
     .catch((error) => {
