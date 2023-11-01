@@ -13,6 +13,8 @@ class config:
     twilio_sid: str = os.getenv("twilio_sid")
     twilio_token: str = os.getenv("twilio_token")
 
+    timezone: str = os.getenv("timezone")
+
     news_api_path: str = os.getenv("news_api_path")
     news_api_user: str = os.getenv("news_api_user")
     news_api_pass: str = os.getenv("news_api_pass")

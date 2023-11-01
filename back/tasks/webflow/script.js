@@ -35,7 +35,9 @@ const radio_change = (event) => {
 const phone_change = (event) => {
   sessionStorage.setItem(PREFIX_NEWS1 + "phone", event.target.value);
 };
-
+const show_error = (error) => {
+  console.warn(error);
+};
 const get_my_headlines = (event) => {
   let headers = {
     "Content-Type": "application/json",
@@ -65,20 +67,32 @@ const get_my_headlines = (event) => {
   fetch("https://185.235.130.227:8000/news/api/client/add/", request)
     .then((response) => {
       response_status = response.status;
-      if (response_status < 200 || response_status >= 500) {
+      if (response_status == 201) {
+        response
+          .json()
+          .then((response_json) => {
+            console.log(response_json[0]);
+            // ok
+            sessionStorage.setItem(
+              PREFIX_NEWS1 + "clients_id",
+              response_json[0]["clients_id"]
+            );
+          })
+          .catch((error) => show_error(error));
+      } else if (response_status == 400) {
+        // get error text
+        response
+          .json()
+          .then((response_json) => {
+            console.log(response_json);
+            //   throw new Error(response_json[0]);
+          })
+          .catch((error) => show_error(error));
+      } else {
         throw new Error(`Status code ${response_status} received`);
       }
-      return response.json();
     })
-    .then((data) => {
-      console.log(data);
-      if (response_status != 201) {
-        throw new Error(data[0]);
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    .catch((error) => show_error(error));
 };
 
 const collectInterests = () => {

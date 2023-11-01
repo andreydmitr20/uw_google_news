@@ -200,11 +200,11 @@ class AddClientView(APIView):
             text = f"{exception}"
             if text.find("email") >= 0:
                 return Response(
-                    [{"email": "Duplicate value"}], status=status.HTTP_400_BAD_REQUEST
+                    {"email": "Duplicate value"}, status=status.HTTP_400_BAD_REQUEST
                 )
             if text.find("phone") >= 0:
                 return Response(
-                    [{"phone": "Duplicate value"}], status=status.HTTP_400_BAD_REQUEST
+                    {"phone": "Duplicate value"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
             return Response(

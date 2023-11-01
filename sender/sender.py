@@ -15,8 +15,6 @@ from mylib.api_lib import api_get, api_delete, api_post, api_put
 
 import time
 
-# plus time zone
-UTC_TIMEDELTA_HOURS = 1
 
 SCHEDULER_FOR_INTERESTS = [
     [0, "start"],
@@ -61,14 +59,20 @@ GET_SMS_TEXT_ATTEMPTS_MAX = 5
 SEND_SMS_ATTEMPTS_MAX = 5
 GET_TOKEN_ATTEMPTS_MAX = 5
 WAIT_SECONDS_AFTER_ERROR = 5
+
+# production only
 # def get_utc_now():
 #     return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-#         hours=UTC_TIMEDELTA_HOURS
+#         hours=int(config.timezone)
 #     )
 
 # SLEEP_TIME_IN_SECONDS=60
+
+# debug only
 SLEEP_TIME_IN_SECONDS = 1
-UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc)
+UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
+    hours=int(config.timezone)
+)
 
 
 def get_utc_now():

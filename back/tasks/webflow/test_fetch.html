@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Test fetch</h1>
+    <div>
+      <label for="email">Email:</label>
+      <input type="text" id="email" name="email" required /><br />
+
+      <label for="newsType">News Type:</label>
+      <input type="text" id="news_type" name="newsType" required /><br />
+
+      <label for="daysInWeek">Days in Week:</label>
+      <input type="text" id="days_in_week" name="daysInWeek" required /><br />
+
+      <label for="phone">Phone:</label>
+      <input type="text" id="phone" name="phone" required /><br />
+
+      <button type="button" id="btn">Submit</button>
+    </div>
+    <script>
+      const show_error = (error) => {
+        console.warn(error);
+      };
+      const get_my_headlines = (event) => {
+        let headers = {
+          "Content-Type": "application/json",
+        };
+        //   headers["Authorization"] =
+        //     "Bearer " + sessionStorage.getItem(TOKEN_ACCESS_ITEM_NAME);
+        let request = {
+          method: "post",
+
+          mode: "cors",
+          cache: "no-cache",
+          credentials: "same-origin",
+          headers: headers,
+          redirect: "follow",
+          referrerPolicy: "no-referrer",
+        };
+
+        let email = document.getElementById("email");
+        let news_type = document.getElementById("news_type");
+        let days_in_week = document.getElementById("days_in_week");
+        let phone = document.getElementById("phone");
+
+        request["body"] = JSON.stringify({
+          email: email.value,
+          news_type: news_type.value,
+          days_in_week: days_in_week.value,
+          phone: phone.value,
+        });
+        fetch("http://localhost:8000/news/api/client/add/", request)
+          .then((response) => {
+            response_status = response.status;
+            if (response_status == 201) {
+              response
+                .json()
+                .then((response_json) => {
+                  console.log(response_json[0]);
+                })
+                .catch((error) => show_error(error));
+            } else if (response_status == 400) {
+              // get error text
+              response
+                .json()
+                .then((response_json) => {
+                  console.log(response_json);
+                  //   throw new Error(response_json[0]);
+                })
+                .catch((error) => show_error(error));
+            } else {
+              throw new Error(`Status code ${response_status} received`);
+            }
+          })
+          .catch((error) => show_error(error));
+      };
+      let btn = document.getElementById("btn");
+      btn.addEventListener("click", (event) => get_my_headlines(event));
+    </script>
+  </body>
+</html>
