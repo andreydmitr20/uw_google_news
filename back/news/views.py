@@ -185,8 +185,8 @@ class AddClientView(APIView):
 class ListSMSClientView(APIView):
     """ListSMSClientView"""
 
-    # permission_classes = [IsAuthenticated]
-    PERMISSION_CLASSES = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    # PERMISSION_CLASSES = [AllowAny]
 
     serializer_class = ListSMSClientSerializer
     model = Clients

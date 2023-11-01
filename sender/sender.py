@@ -34,7 +34,7 @@ SCHEDULER_FOR_INTERESTS = [
     [1530, "stop"],
 ]
 
-NEWS_TYPE = {
+NEWS_SEARCH_TEXT = {
     "w": "Today top world news",
     "t": "Today tech and innovations top news",
     "b": "Today business and finance top news",
@@ -47,6 +47,14 @@ NEWS_TYPE = {
     "f": "Today food and lifestyle top news",
     "a": "Today art and fashion top news",
 }
+
+
+def get_news_search_text(interest: str) -> str:
+    try:
+        return NEWS_SEARCH_TEXT[interest]
+    except:
+        return NEWS_SEARCH_TEXT["w"]
+
 
 GET_CLIENTS_LIST_ATTEMPTS_MAX = 5
 GET_SMS_TEXT_ATTEMPTS_MAX = 5
@@ -106,20 +114,11 @@ async def get_clients_list(
                 },
                 token=token,
             )
-            # if not (
-            #     data
-            #     and isinstance(data, list)
-            #     and len(data) >= 1
-            #     and isinstance(data[0], dict)
-            # ):
-            #     raise Exception(f"Can not get sms text for {api_url}")
-            # result = data[0]
-            # if result["sms_text"] != "":
-            #     return result["sms_text"]
-            # if result["error"] != "":
-            #     raise Exception(result["error"])
-            # raise Exception("get empty sms text")
-            return [{"phone": "12345"}]
+            # log.info(log_pid + f"{data}")
+            if not (isinstance(data, list)):
+                raise Exception(f"Can not get clients list for {api_url}")
+
+            return data
 
         except Exception as exception:
             log.warning(log_pid + f"{exception}")
@@ -145,10 +144,7 @@ async def get_sms_text(search_text: str, token: str, log_pid: str) -> str:
                 token=token,
             )
             if not (
-                data
-                and isinstance(data, list)
-                and len(data) >= 1
-                and isinstance(data[0], dict)
+                isinstance(data, list) and len(data) >= 1 and isinstance(data[0], dict)
             ):
                 raise Exception(f"Can not get sms text for {api_url}")
             result = data[0]
@@ -198,7 +194,7 @@ async def get_token(log_pid: str) -> str:
                     "password": config.news_api_pass,
                 },
             )
-            if not (jwt and isinstance(jwt, dict) and "access" in jwt.keys()):
+            if not (isinstance(jwt, dict) and "access" in jwt.keys()):
                 raise Exception(f"Can not get access token for {api_url}")
             # log.info(log_pid + f"{jwt}")
             return jwt["access"]
@@ -251,7 +247,9 @@ async def sender():
 
         # do task
         interest = SCHEDULER_FOR_INTERESTS[scheduler_interests_index][1]
-        log.info(log_pid + f"start task for interest '{NEWS_TYPE[interest]}'")
+        log.info(
+            log_pid + f"start task for interest '{get_news_search_text(interest)}'"
+        )
 
         # got token
         token = await get_token(log_pid)
@@ -266,7 +264,9 @@ async def sender():
             )
             if clients_list_length != 0:
                 #  get sms_text for interest and day_off_week
-                sms_text = await get_sms_text(NEWS_TYPE[interest], token, log_pid)
+                sms_text = await get_sms_text(
+                    get_news_search_text(interest), token, log_pid
+                )
                 if sms_text != "":
                     log.info(log_pid + f"got sms text: '{sms_text}'")
 
