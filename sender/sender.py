@@ -1,9 +1,10 @@
 import asyncio
 import os
-from datetime import datetime, timezone, timedelta
+import time
+from datetime import datetime, timedelta, timezone
 
-from config import config
-from mylib.log import d, log, current_utc_date_int
+from mylib.api_lib import api_delete, api_get, api_post, api_put
+from mylib.log import current_utc_date_int, d, log
 from mylib.test_services import (
     SERVICE_POSTGRESQL,
     SERVICE_RABBITMQ,
@@ -11,10 +12,9 @@ from mylib.test_services import (
     SERVICE_SELENIUM,
     test_services,
 )
-from mylib.api_lib import api_get, api_delete, api_post, api_put
+from mylib.twilio_lib import MESSAGE_SID_LENGTH, send_sms
 
-import time
-
+from config import config
 
 SCHEDULER_FOR_INTERESTS = [
     [0, "start"],
@@ -168,7 +168,7 @@ async def get_sms_text(search_text: str, token: str, log_pid: str) -> str:
     return ""
 
 
-async def send_sms(sms_text: str, client: dict, log_pid: str):
+async def send_sms_to_client(sms_text: str, client: dict, log_pid: str):
     """send_sms"""
     log_pid += "send_sms: "
     attempt = 0
@@ -176,6 +176,14 @@ async def send_sms(sms_text: str, client: dict, log_pid: str):
         attempt += 1
 
         try:
+            sid = send_sms(
+                sms_text=sms_text,
+                from_phone=config.from_phone,
+                to_phone=client["phone"],
+            )
+            if len(sid) != MESSAGE_SID_LENGTH:
+                raise Exception("No good sms message sid returned")
+
             return
 
         except Exception as exception:
@@ -279,7 +287,7 @@ async def sender():
                     for client in clients_list:
                         log.info(log_pid + f"send sms to client: {client}")
                         # send sms_text for client
-                        await send_sms(sms_text, client, log_pid)
+                        await send_sms_to_client(sms_text, client, log_pid)
 
         # next task
         scheduler_interests_index += 1

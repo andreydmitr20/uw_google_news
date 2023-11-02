@@ -59,6 +59,7 @@ const show_error = (error) => {
   }
 };
 const get_my_headlines = (event) => {
+  event.preventDefault();
   show_error("");
 
   let headers = {
@@ -97,6 +98,7 @@ const get_my_headlines = (event) => {
               PREFIX_NEWS1 + "clients_id",
               response_json[0]["clients_id"]
             );
+            window.location.href = "/thanks";
           })
           .catch((error) => show_error(error));
       } else if (response.status == 400) {

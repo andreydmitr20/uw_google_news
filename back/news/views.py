@@ -1,4 +1,5 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 from django.db.models import F, Q
 from django.shortcuts import render
 from django.views import View
@@ -9,10 +10,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from tasks.news.mylib.log import log
+from tasks.news.mylib.twilio_lib import MESSAGE_SID_LENGTH, send_sms
 from tasks.news.news import news_scraper
-
-from .models import Clients
-from .serializers import ClientsSerializer, EmptySerializer, ListSMSClientSerializer
 from utils.views_functions import (
     API_TEXT_SEARCH,
     API_TEXT_SHORT,
@@ -30,7 +29,12 @@ from utils.views_functions import (
     update_simple,
 )
 
+from config import config
 
+from .models import Clients
+from .serializers import ClientsSerializer, EmptySerializer, ListSMSClientSerializer
+
+SMS_TEXT_SUBSCRIPTION_IS_OK = "You have successfully subscribed to news updates on selected topics at myheadlines.ai. Thank you!"
 PERMISSION_CLASSES = [AllowAny]
 # PERMISSION_CLASSES=[IsAuthenticated]
 
@@ -203,8 +207,19 @@ class AddClientView(APIView):
                 # )
 
                 serializer.save()
+                clients_id = serializer.data["clients_id"]
+                try:
+                    sid = send_sms(
+                        sms_text=SMS_TEXT_SUBSCRIPTION_IS_OK,
+                        from_phone=config.from_phone,
+                        to_phone=phone,
+                    )
+                    if len(sid) != MESSAGE_SID_LENGTH:
+                        raise Exception("No good sms message sid returned")
+                except Exception as exception:
+                    log.error(f"Failed to send sms to clients_id={clients_id}")
                 return Response(
-                    [{"clients_id": serializer.data["clients_id"]}],
+                    [{"clients_id": clients_id}],
                     status=status.HTTP_201_CREATED,
                 )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

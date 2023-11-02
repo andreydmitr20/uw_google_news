@@ -9,6 +9,8 @@ account_sid = config.twilio_sid
 auth_token = config.twilio_token
 client = Client(account_sid, auth_token)
 
+MESSAGE_SID_LENGTH = 34
+
 
 def send_sms(from_phone: str, to_phone: str, sms_text: str):
     message = client.messages.create(
@@ -21,8 +23,13 @@ def send_sms(from_phone: str, to_phone: str, sms_text: str):
 
 
 if __name__ == "__main__":
+    # print(config.from_phone)
     try:
-        sms_sid = send_sms(config.from_phone, "+38268498976", "Hello")
+        sms_sid = send_sms(
+            config.from_phone,
+            "+16174305286",
+            "Test messaging for Nik's myheadlines.ai",
+        )
         print(sms_sid)
     except Exception as exception:
         print(f"{exception}")
