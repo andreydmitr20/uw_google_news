@@ -216,6 +216,9 @@ class AddClientView(APIView):
                     )
                     if len(sid) != MESSAGE_SID_LENGTH:
                         raise Exception("No good sms message sid returned")
+
+                    log.info(f"Sended the subscription sms to clients_id={clients_id}")
+
                 except Exception as exception:
                     log.error(f"Failed to send sms to clients_id={clients_id}")
                 return Response(
