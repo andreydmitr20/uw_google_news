@@ -63,11 +63,9 @@ const get_my_headlines = (event) => {
     days_in_week: sessionStorage.getItem(PREFIX_NEWS1 + "days_in_week"),
     phone: sessionStorage.getItem(PREFIX_NEWS1 + "phone"),
   });
-  let response_status = None;
   fetch("https://myheadlines.pro/news/api/client/add/", request)
     .then((response) => {
-      response_status = response.status;
-      if (response_status == 201) {
+      if (response.status == 201) {
         response
           .json()
           .then((response_json) => {
@@ -79,7 +77,7 @@ const get_my_headlines = (event) => {
             );
           })
           .catch((error) => show_error(error));
-      } else if (response_status == 400) {
+      } else if (response.status == 400) {
         // get error text
         response
           .json()
@@ -89,7 +87,7 @@ const get_my_headlines = (event) => {
           })
           .catch((error) => show_error(error));
       } else {
-        throw new Error(`Status code ${response_status} received`);
+        throw new Error(`Status code ${response.status} received`);
       }
     })
     .catch((error) => show_error(error));
