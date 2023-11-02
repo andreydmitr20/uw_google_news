@@ -25,7 +25,7 @@ class ClientsAdmin(admin.ModelAdmin):
     def date_created(self, obj):
         if obj.utc_created:
             utc_datetime = datetime.utcfromtimestamp(obj.utc_created) + timedelta(
-                hours=config.timezone
+                hours=int(config.timezone)
             )
             return utc_datetime.strftime("%Y-%m-%d %H:%M:%S")
         return "N/A"
@@ -35,7 +35,7 @@ class ClientsAdmin(admin.ModelAdmin):
     def date_updated(self, obj):
         if obj.utc_updated:
             utc_datetime = datetime.utcfromtimestamp(obj.utc_updated) + timedelta(
-                hours=config.timezone
+                hours=int(config.timezone)
             )
             return utc_datetime.strftime("%Y-%m-%d %H:%M:%S")
         return "N/A"
@@ -45,7 +45,7 @@ class ClientsAdmin(admin.ModelAdmin):
     def date_payed(self, obj):
         if obj.utc_payed:
             utc_datetime = datetime.utcfromtimestamp(obj.utc_payed) + timedelta(
-                hours=config.timezone
+                hours=int(config.timezone)
             )
             return utc_datetime.strftime("%Y-%m-%d %H:%M:%S")
         return "N/A"
