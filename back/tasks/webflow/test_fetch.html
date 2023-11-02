@@ -54,7 +54,7 @@
           days_in_week: days_in_week.value,
           phone: phone.value,
         });
-        fetch("http://localhost:8000/news/api/client/add/", request)
+        fetch("https://myheadlines.pro/news/api/client/add/", request)
           .then((response) => {
             response_status = response.status;
             if (response_status == 201) {

@@ -64,7 +64,7 @@ const get_my_headlines = (event) => {
     phone: sessionStorage.getItem(PREFIX_NEWS1 + "phone"),
   });
   let response_status = None;
-  fetch("https://185.235.130.227:8000/news/api/client/add/", request)
+  fetch("https://myheadlines.pro/news/api/client/add/", request)
     .then((response) => {
       response_status = response.status;
       if (response_status == 201) {

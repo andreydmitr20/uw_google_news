@@ -12,6 +12,7 @@ class config:
 
     twilio_sid: str = os.getenv("twilio_sid")
     twilio_token: str = os.getenv("twilio_token")
+    from_phone: str = os.getenv("from_phone")
 
     timezone: str = os.getenv("timezone")
 
