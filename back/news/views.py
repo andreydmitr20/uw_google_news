@@ -30,6 +30,7 @@ from utils.views_functions import (
     update_simple,
 )
 
+
 PERMISSION_CLASSES = [AllowAny]
 # PERMISSION_CLASSES=[IsAuthenticated]
 

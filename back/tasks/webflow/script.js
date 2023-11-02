@@ -1,21 +1,21 @@
 PREFIX_NEWS1 = "news1_";
 
 const emailChange = (event, email) => {
-  localStorage.setItem(PREFIX_NEWS1 + "email", email.value);
+  sessionStorage.setItem(PREFIX_NEWS1 + "email", email.value);
 };
 
 const collectEmail = () => {
   let email = document.querySelector('input[type="email"]');
   if (email !== null) {
     // console.dir(email);
-    localStorage.setItem(PREFIX_NEWS1 + "email", "");
+    sessionStorage.setItem(PREFIX_NEWS1 + "email", "");
     email.addEventListener("change", (event) => emailChange(event, email));
   }
 };
 
 const checkbox_change = (event, checkboxElement, type_label) => {
   //   console.dir(checkboxElement);
-  let news_type = localStorage.getItem(PREFIX_NEWS1 + "news_type");
+  let news_type = sessionStorage.getItem(PREFIX_NEWS1 + "news_type");
   if (news_type === null) {
     news_type = "";
   }
@@ -24,25 +24,48 @@ const checkbox_change = (event, checkboxElement, type_label) => {
   if (checkboxElement.checked) {
     news_type += type_label;
   }
-  localStorage.setItem(PREFIX_NEWS1 + "news_type", news_type);
+  sessionStorage.setItem(PREFIX_NEWS1 + "news_type", news_type);
 };
 
 const radio_change = (event) => {
-  localStorage.setItem(PREFIX_NEWS1 + "days_in_week", event.target.value);
+  sessionStorage.setItem(PREFIX_NEWS1 + "days_in_week", event.target.value);
 };
 
 const phone_change = (event) => {
-  localStorage.setItem(PREFIX_NEWS1 + "phone", event.target.value);
+  sessionStorage.setItem(PREFIX_NEWS1 + "phone", event.target.value);
 };
 const show_error = (error) => {
   console.warn(error);
+  let errorText = document.getElementById("error-text");
+  if (errorText !== null) {
+    if (error === "") {
+      errorText.innerHTML = "";
+      return;
+    }
+    const [firstKey, firstValue] = Object.entries(error)[0];
+    let text = "";
+    if (Array.isArray(firstValue)) {
+      text = firstValue[0];
+    } else {
+      text = firstValue;
+    }
+    if (text.indexOf("field may not be blank") !== -1) {
+      text = text.replace(
+        "This field",
+        firstKey.charAt(0).toUpperCase() + firstKey.slice(1)
+      );
+    }
+    errorText.innerHTML = `Error: ${text} (${firstKey})`;
+  }
 };
 const get_my_headlines = (event) => {
+  show_error("");
+
   let headers = {
     "Content-Type": "application/json",
   };
   //   headers["Authorization"] =
-  //     "Bearer " + localStorage.getItem(TOKEN_ACCESS_ITEM_NAME);
+  //     "Bearer " + sessionStorage.getItem(TOKEN_ACCESS_ITEM_NAME);
   let request = {
     method: "post",
 
@@ -57,10 +80,10 @@ const get_my_headlines = (event) => {
   let currentDate = new Date();
   let utc_now_int = Math.floor(currentDate.getTime() / 1000);
   request["body"] = JSON.stringify({
-    email: localStorage.getItem(PREFIX_NEWS1 + "email"),
-    news_type: localStorage.getItem(PREFIX_NEWS1 + "news_type"),
-    days_in_week: localStorage.getItem(PREFIX_NEWS1 + "days_in_week"),
-    phone: localStorage.getItem(PREFIX_NEWS1 + "phone"),
+    email: sessionStorage.getItem(PREFIX_NEWS1 + "email"),
+    news_type: sessionStorage.getItem(PREFIX_NEWS1 + "news_type"),
+    days_in_week: sessionStorage.getItem(PREFIX_NEWS1 + "days_in_week"),
+    phone: sessionStorage.getItem(PREFIX_NEWS1 + "phone"),
   });
   fetch("https://myheadlines.pro/news/api/client/add/", request)
     .then((response) => {
@@ -70,7 +93,7 @@ const get_my_headlines = (event) => {
           .then((response_json) => {
             console.log(response_json[0]);
             // ok
-            localStorage.setItem(
+            sessionStorage.setItem(
               PREFIX_NEWS1 + "clients_id",
               response_json[0]["clients_id"]
             );
@@ -82,11 +105,11 @@ const get_my_headlines = (event) => {
           .json()
           .then((response_json) => {
             console.log(response_json);
-            //   throw new Error(response_json[0]);
+            show_error(response_json);
           })
           .catch((error) => show_error(error));
       } else {
-        throw new Error(`Status code ${response.status} received`);
+        show_error({ error: `Server error (code ${response.status})` });
       }
     })
     .catch((error) => show_error(error));
@@ -95,9 +118,9 @@ const get_my_headlines = (event) => {
 const collectInterests = () => {
   let itemw = document.getElementById("World-News");
   if (itemw !== null) {
-    localStorage.setItem(PREFIX_NEWS1 + "news_type", "");
-    localStorage.setItem(PREFIX_NEWS1 + "days_in_week", "");
-    localStorage.setItem(PREFIX_NEWS1 + "phone", "");
+    sessionStorage.setItem(PREFIX_NEWS1 + "news_type", "");
+    sessionStorage.setItem(PREFIX_NEWS1 + "days_in_week", "");
+    sessionStorage.setItem(PREFIX_NEWS1 + "phone", "");
     itemw.addEventListener("change", (event) =>
       checkbox_change(event, itemw, "w")
     );
