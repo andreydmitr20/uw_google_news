@@ -21,10 +21,33 @@
       <input type="text" id="phone" name="phone" required /><br />
 
       <button type="button" id="btn">Submit</button>
+      <p id="error-text"></p>
     </div>
     <script>
       const show_error = (error) => {
         console.warn(error);
+        let errorText = document.getElementById("error-text");
+        if (errorText !== null) {
+          if (error === "") {
+            errorText.innerHTML = "";
+            return;
+          }
+          const [firstKey, firstValue] = Object.entries(error)[0];
+          console.log(firstValue);
+          let text = "";
+          if (Array.isArray(firstValue)) {
+            text = firstValue[0];
+          } else {
+            text = firstValue;
+          }
+          if (text.indexOf("field may not be blank") !== -1) {
+            text = text.replace(
+              "This field",
+              firstKey.charAt(0).toUpperCase() + firstKey.slice(1)
+            );
+          }
+          errorText.innerHTML = `Error: ${text} (${firstKey})`;
+        }
       };
       const get_my_headlines = (event) => {
         let headers = {
@@ -54,27 +77,27 @@
           days_in_week: days_in_week.value,
           phone: phone.value,
         });
+        show_error("");
         fetch("https://myheadlines.pro/news/api/client/add/", request)
           .then((response) => {
-            response_status = response.status;
-            if (response_status == 201) {
+            if (response.status == 201) {
               response
                 .json()
                 .then((response_json) => {
                   console.log(response_json[0]);
                 })
                 .catch((error) => show_error(error));
-            } else if (response_status == 400) {
+            } else if (response.status == 400) {
               // get error text
               response
                 .json()
                 .then((response_json) => {
                   console.log(response_json);
-                  //   throw new Error(response_json[0]);
+                  show_error(response_json);
                 })
                 .catch((error) => show_error(error));
             } else {
-              throw new Error(`Status code ${response_status} received`);
+              show_error({ error: `Server error (code ${response.status})` });
             }
           })
           .catch((error) => show_error(error));

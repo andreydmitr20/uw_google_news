@@ -40,6 +40,10 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.myheadlines.ai/",
     "null",
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://myheadlines.pro",
+    "https://www.https://myheadlines.pro",
+]
 
 # Application definition
 
