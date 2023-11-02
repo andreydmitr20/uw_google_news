@@ -42,7 +42,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://myheadlines.pro",
-    "https://www.https://myheadlines.pro",
+    "https://www.myheadlines.pro",
 ]
 
 # Application definition
