@@ -62,26 +62,26 @@ WAIT_SECONDS_AFTER_ERROR = 5
 
 
 # production only
-# def get_utc_now():
-#     return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-#         hours=int(config.timezone)
-#     )
+def get_utc_now():
+    return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
+        hours=int(config.timezone)
+    )
 
 
-# SLEEP_TIME_IN_SECONDS = 60
+SLEEP_TIME_IN_SECONDS = 60
 
 # debug only
-SLEEP_TIME_IN_SECONDS = 1
-UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-    hours=int(config.timezone)
-)
+# SLEEP_TIME_IN_SECONDS = 1
+# UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
+#     hours=int(config.timezone)
+# )
 
 
-def get_utc_now():
-    global UTC_NOW
-    UTC_NOW = UTC_NOW + timedelta(minutes=10)
-    log.info(f"{get_hour_minute_int(UTC_NOW)}")
-    return UTC_NOW
+# def get_utc_now():
+#     global UTC_NOW
+#     UTC_NOW = UTC_NOW + timedelta(minutes=10)
+#     log.info(f"{get_hour_minute_int(UTC_NOW)}")
+#     return UTC_NOW
 
 
 def get_hour_minute_int(utc_now):
