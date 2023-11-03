@@ -80,7 +80,6 @@ services:
       context: .
       dockerfile: ./Dockerfile.back
     restart: always
-
     depends_on:
       - db
       - selenium
