@@ -27,7 +27,7 @@ urlpatterns = [
         name="add client",
     ),
     path(
-        "api/client/list/sms/",
+        "api/client/list/sms/<int:weekday>/<str:interest>/",
         ListSMSClientView.as_view(),
         name="list clients for sms sending",
     ),

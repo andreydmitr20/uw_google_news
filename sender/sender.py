@@ -62,26 +62,26 @@ WAIT_SECONDS_AFTER_ERROR = 5
 
 
 # production only
-def get_utc_now():
-    return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-        hours=int(config.timezone)
-    )
+# def get_utc_now():
+#     return datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
+#         hours=int(config.timezone)
+#     )
 
 
-SLEEP_TIME_IN_SECONDS = 60
+# SLEEP_TIME_IN_SECONDS = 60
 
 # debug only
-# SLEEP_TIME_IN_SECONDS = 1
-# UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-#     hours=int(config.timezone)
-# )
+SLEEP_TIME_IN_SECONDS = 1
+UTC_NOW = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
+    hours=int(config.timezone)
+)
 
 
-# def get_utc_now():
-#     global UTC_NOW
-#     UTC_NOW = UTC_NOW + timedelta(minutes=10)
-#     log.info(f"{get_hour_minute_int(UTC_NOW)}")
-#     return UTC_NOW
+def get_utc_now():
+    global UTC_NOW
+    UTC_NOW = UTC_NOW + timedelta(minutes=10)
+    log.info(f"{get_hour_minute_int(UTC_NOW)}")
+    return UTC_NOW
 
 
 def get_hour_minute_int(utc_now):
@@ -111,13 +111,11 @@ async def get_clients_list(
 
         try:
             # get sms_text
-            api_url = config.news_api_path + f"news/api/client/list/sms/"
+            api_url = (
+                config.news_api_path + f"news/api/client/list/sms/{weekday}/{interest}/"
+            )
             data = await api_get(
                 api_url,
-                params={
-                    "weekday": weekday,
-                    "interest": interest,
-                },
                 token=token,
             )
             # log.info(log_pid + f"{data}")
@@ -176,13 +174,14 @@ async def send_sms_to_client(sms_text: str, client: dict, log_pid: str):
         attempt += 1
 
         try:
-            sid = send_sms(
-                sms_text=sms_text,
-                from_phone=config.from_phone,
-                to_phone=client["phone"],
-            )
-            if len(sid) != MESSAGE_SID_LENGTH:
-                raise Exception("No good sms message sid returned")
+            if config.send_sms != "False":
+                sid = send_sms(
+                    sms_text=sms_text,
+                    from_phone=config.from_phone,
+                    to_phone=client["phone"],
+                )
+                if len(sid) != MESSAGE_SID_LENGTH:
+                    raise Exception("No good sms message sid returned")
 
             return
 

@@ -123,12 +123,12 @@ class ClientsView(APIView):
 
     @extend_schema(
         description="",
-        parameters=[
-            # OpenApiParameter("search", description=""),
-            OpenApiParameter("page", description=""),
-            OpenApiParameter("page_size"),
-            # OpenApiParameter("day_of_week"),
-        ],
+        # parameters=[
+        #     # OpenApiParameter("search", description=""),
+        #     OpenApiParameter("page", description=""),
+        #     OpenApiParameter("page_size"),
+        #     # OpenApiParameter("day_of_week"),
+        # ],
     )
     def get(self, request, clients_id=0, format=None):
         """get"""
@@ -209,13 +209,14 @@ class AddClientView(APIView):
                 serializer.save()
                 clients_id = serializer.data["clients_id"]
                 try:
-                    sid = send_sms(
-                        sms_text=SMS_TEXT_SUBSCRIPTION_IS_OK,
-                        from_phone=config.from_phone,
-                        to_phone=phone,
-                    )
-                    if len(sid) != MESSAGE_SID_LENGTH:
-                        raise Exception("No good sms message sid returned")
+                    if config.send_sms != "False":
+                        sid = send_sms(
+                            sms_text=SMS_TEXT_SUBSCRIPTION_IS_OK,
+                            from_phone=config.from_phone,
+                            to_phone=phone,
+                        )
+                        if len(sid) != MESSAGE_SID_LENGTH:
+                            raise Exception("No good sms message sid returned")
 
                     log.info(f"Sended the subscription sms to clients_id={clients_id}")
 
@@ -254,18 +255,18 @@ class ListSMSClientView(APIView):
 
     @extend_schema(
         description="",
-        parameters=[
-            # OpenApiParameter("search", description=""),
-            OpenApiParameter(
-                "weekday", description="required - day of week: 1- monday, 7 - sunday"
-            ),
-            OpenApiParameter(
-                "interest", description="required - interest: 'w' - world news, etc."
-            ),
-            # OpenApiParameter("day_of_week"),
-        ],
+        # parameters=[
+        #     # OpenApiParameter("search", description=""),
+        #     OpenApiParameter(
+        #         "weekday", description="required - day of week: 1- monday, 7 - sunday"
+        #     ),
+        #     OpenApiParameter(
+        #         "interest", description="required - interest: 'w' - world news, etc."
+        #     ),
+        #     # OpenApiParameter("day_of_week"),
+        # ],
     )
-    def get_list_for_days_in_week(self, weekday: int) -> list:
+    def list_for_days_in_week(self, weekday: int) -> list:
         match weekday:
             case 1:
                 return [3, 7]
@@ -282,16 +283,9 @@ class ListSMSClientView(APIView):
             case _:
                 return [7]
 
-    def get(self, request, format=None):
+    def get(self, request, weekday=None, interest=None, format=None):
         """get"""
-        queryset = self.model.objects.all()
-        weekday = request.GET.get("weekday")
-        interest = request.GET.get("interest")
-        if weekday is None or interest is None:
-            return Response(
-                [{"error": f"'weekday' and 'interest' params are required"}],
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+
         try:
             weekday = int(weekday)
         except:
@@ -299,15 +293,16 @@ class ListSMSClientView(APIView):
                 [{"error": f"'weekday' param should be from 1 to 7 (sunday)"}],
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        interest = interest.strip().lower()
-        if interest == "" or len(interest) > 1:
+
+        if interest is None or interest.strip() == "" or len(interest) > 1:
             return Response(
                 [{"error": f"'inerest' param has to be one character like 'w'"}],
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        queryset = queryset.filter(
-            days_in_week__in=self.get_list_for_days_in_week(weekday)
-        )
+        interest = interest.lower()[0]
+
+        queryset = self.model.objects.all()
+        queryset = queryset.filter(days_in_week__in=self.list_for_days_in_week(weekday))
         queryset = queryset.filter(news_type__contains=interest)
         print_query(True, queryset)
 

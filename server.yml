@@ -37,10 +37,10 @@ services:
       POSTGRES_DB: ${db_user}
     volumes:
       - news-db-data:/var/lib/postgresql/data
-    expose:
-      - "5432"
-    # ports:
-    #   - "${db_port}:5432"
+    # expose:
+    #   - "5432"
+    ports:
+      - "${db_port}:5432"
     healthcheck:
       test: pg_isready -U ${db_user}
       interval: 2s
