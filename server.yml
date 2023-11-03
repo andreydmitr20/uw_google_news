@@ -11,9 +11,9 @@ services:
     expose:
       - "${selenium_port}"
     ports:
-      # - "${selenium_port}:4444"
+      - "127.0.0.1:${selenium_port}:${selenium_port}"
       # secret
-      - "7900:7900"
+      - "127.0.0.1:7900:7900"
     logging:
       options:
         max-size: "10m"
@@ -38,9 +38,9 @@ services:
     volumes:
       - news-db-data:/var/lib/postgresql/data
     expose:
-      - "5432"
-    # ports:
-    #   - "${db_port}:5432"
+      - "${db_port}"
+    ports:
+      - "127.0.0.1:${db_port}:${db_port}"
     healthcheck:
       test: pg_isready -U ${db_user}
       interval: 2s
@@ -55,10 +55,12 @@ services:
     env_file: .env
     image: redis:6
     restart: always
-    # ports:
-    #   - "${redis_port}:6379"
+
     expose:
       - "${redis_port}"
+    ports:
+      - "127.0.0.1:${redis_port}:${redis_port}"
+
     mem_limit: 500M
     mem_reservation: 100m
     cpus: 0.3
@@ -97,8 +99,6 @@ services:
     restart: always
     depends_on:
       - back
-    # ports:
-    #   - "8000:8000"
     logging:
       options:
         max-size: "10m"
