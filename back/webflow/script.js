@@ -88,7 +88,23 @@ const get_my_headlines = (event) => {
   });
   fetch("https://myheadlines.pro/news/api/client/add/", request)
     .then((response) => {
-      if (response.status == 201) {
+      if (response.status == 200) {
+        response
+          .json()
+          .then((response_json) => {
+            console.log(response_json[0]);
+            // ok
+            sessionStorage.setItem(
+              PREFIX_NEWS1 + "clients_id",
+              response_json[0]["clients_id"]
+            );
+            sessionStorage.setItem(PREFIX_NEWS1 + "phone", "");
+            // sessionStorage.setItem(PREFIX_NEWS1 + "email", "");
+
+            window.location.href = "/updated";
+          })
+          .catch((error) => show_error(error));
+      } else if (response.status == 201) {
         response
           .json()
           .then((response_json) => {

@@ -78,9 +78,17 @@
           phone: phone.value,
         });
         show_error("");
-        fetch("https://myheadlines.pro/news/api/client/add/", request)
+        fetch("http://localhost:8000/news/api/client/add/", request)
+          // fetch("https://myheadlines.pro/news/api/client/add/", request)
           .then((response) => {
-            if (response.status == 201) {
+            if (response.status == 200) {
+              response
+                .json()
+                .then((response_json) => {
+                  console.log(response_json[0]);
+                })
+                .catch((error) => show_error(error));
+            } else if (response.status == 201) {
               response
                 .json()
                 .then((response_json) => {
