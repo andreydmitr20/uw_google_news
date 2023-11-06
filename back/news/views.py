@@ -29,6 +29,7 @@ from utils.views_functions import (
     select_simple,
     to_int,
     update_simple,
+    is_serializer_error_duplicate_value,
 )
 
 from config import config
@@ -234,12 +235,9 @@ class AddClientView(APIView):
                     [{"clients_id": clients_id}],
                     status=status.HTTP_201_CREATED,
                 )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        except IntegrityError as exception:
-            text = f"{exception}"
-            if text.find("email") >= 0:
-                clients_email = serializer.validated_data["email"]
+            if is_serializer_error_duplicate_value(serializer.errors, "email"):
+                clients_email = data["email"]
                 client = get_object_or_404(Clients, email=clients_email)
                 clients_id = client.clients_id
 
@@ -273,21 +271,19 @@ class AddClientView(APIView):
 
                 except Exception as exception:
                     return Response(
-                        {"error": "Error updating client data."},
+                        {"error": f"Error updating client data. {exception}"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-            # duplicate phone number
-            if text.find("phone") >= 0:
+
+            elif is_serializer_error_duplicate_value(serializer.errors, "phone"):
                 return Response(
                     {
-                        "phone": "The user with this email has registered a different phone number."
+                        "phone": "The client with this email has registered a different phone number."
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(
-                [{"error": f"{exception}"}], status=status.HTTP_400_BAD_REQUEST
-            )
         except Exception as exception:
             return Response(
                 {"error": f"{exception}"},
