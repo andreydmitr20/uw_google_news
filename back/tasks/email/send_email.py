@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from config import config
 
 
+# go to gmail/security/2-way auth/app passwords and get 16 chars password
 def send_email(subject, body, to_email):
     # Email configuration
     sender_email = config.sender_email
