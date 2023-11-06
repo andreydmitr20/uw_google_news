@@ -10,6 +10,9 @@ load_dotenv()
 class config:
     """common config constants"""
 
+    sender_email: str = os.getenv("sender_email")
+    sender_email_pass: str = os.getenv("sender_email_pass")
+
     send_sms: str = os.getenv("send_sms")
     twilio_sid: str = os.getenv("twilio_sid")
     twilio_token: str = os.getenv("twilio_token")
