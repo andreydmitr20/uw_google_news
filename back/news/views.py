@@ -276,7 +276,6 @@ class AddClientView(APIView):
                     )
 
             elif is_serializer_error_duplicate_value(serializer.errors, "phone"):
-                # duplicate phone number
                 return Response(
                     {
                         "phone": "The client with this email has registered a different phone number."

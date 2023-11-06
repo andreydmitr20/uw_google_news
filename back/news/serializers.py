@@ -33,7 +33,7 @@ class ClientsSerializer(serializers.ModelSerializer):
         DAYS_IN_WEEK_CHOICES = [1, 2, 3, 7]
         if value is None or not value in DAYS_IN_WEEK_CHOICES:
             raise serializers.ValidationError(
-                "Please enter a valid message delivery frequency per week (1, 2, 3, or 7)."
+                "Please enter a valid message delivery frequency per week (1, 2, 3 or 7)."
             )
 
         return value
