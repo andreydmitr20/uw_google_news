@@ -223,3 +223,12 @@ def filter_simple(queryset, field_name, value):
 def filter_params_simple(queryset, field_name, request):
     """filter_params_simple"""
     return filter_simple(queryset, field_name, request.query_params.get(field_name))
+
+
+def is_serializer_error_duplicate_value(
+    serializer_errors: dict, field_name: str
+) -> bool:
+    return (
+        field_name in serializer_errors
+        and serializer_errors[field_name][0].find("already exists") != -1
+    )

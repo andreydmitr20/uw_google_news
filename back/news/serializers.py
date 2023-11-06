@@ -14,24 +14,20 @@ class ClientsSerializer(serializers.ModelSerializer):
     """ClientsSerializer"""
 
     # does not raise the duplicate value exception
-    # def validate_phone(self, value):
-    #     regex = r"^\+?1?\d{9,15}$"
-    #     if not match(regex, value):
-    #         raise serializers.ValidationError("Enter a valid phone number.")
+    def validate_phone(self, value):
+        regex = r"^\+?1?\d{9,15}$"
+        if not match(regex, value):
+            raise serializers.ValidationError("Enter a valid phone number.")
 
-    #     return value
+        return value
 
-    phone = serializers.CharField(
-        validators=[
-            RegexValidator(
-                regex=r"^\+?1?\d{9,15}$", message="Enter a valid phone number."
-            )
-        ]
-    )
+    # does not raise the duplicate value exception
+    def validate_email(self, value):
+        regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not match(regex, value):
+            raise serializers.ValidationError("Enter a valid email.")
 
-    email = serializers.EmailField(
-        validators=[EmailValidator(message="Enter a valid email address.")]
-    )
+        return value
 
     def validate_days_in_week(self, value):
         DAYS_IN_WEEK_CHOICES = [1, 2, 3, 7]
