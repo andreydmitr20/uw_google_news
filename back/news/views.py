@@ -1,7 +1,9 @@
+import os
 from datetime import datetime, timedelta, timezone
 
+from django.db import IntegrityError
 from django.db.models import F, Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views import View
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers, status, viewsets
@@ -35,6 +37,9 @@ from .models import Clients
 from .serializers import ClientsSerializer, EmptySerializer, ListSMSClientSerializer
 
 SMS_TEXT_SUBSCRIPTION_IS_OK = "You have successfully subscribed to news updates on selected topics at myheadlines.ai. Thank you!"
+SMS_TEXT_SUBSCRIPTION_IS_UPDATED = (
+    "You have successfully updated your subscription at myheadlines.ai. Thank you!"
+)
 PERMISSION_CLASSES = [AllowAny]
 # PERMISSION_CLASSES=[IsAuthenticated]
 
@@ -182,10 +187,33 @@ class AddClientView(APIView):
         #     # OpenApiParameter("day_of_week"),
         # ],
     )
+    def send_sms_to_client(self, clients_id: int, phone: str, sms_text: str):
+        """send_sms_to_client"""
+        log_pid = f"back-{os.getpid()}: "
+        try:
+            if config.send_sms != "False":
+                sid = send_sms(
+                    sms_text=sms_text,
+                    from_phone=config.from_phone,
+                    to_phone=phone,
+                )
+                if len(sid) != MESSAGE_SID_LENGTH:
+                    raise Exception("No good sms message sid returned")
+
+            log.info(log_pid + f"Sended sms to clients_id={clients_id}")
+
+        except Exception as exception:
+            log.error(log_pid + f"Failed to send sms to clients_id={clients_id}")
+
     def post(self, request, format=None):
         """post"""
+
+        data = request.data
+        utc_date = datetime.now(timezone.utc)
+        utc_now_int = int(utc_date.timestamp())
+
         phone = (
-            request.data["phone"]
+            data["phone"]
             .replace("-", "")
             .replace(")", "")
             .replace("(", "")
@@ -193,53 +221,77 @@ class AddClientView(APIView):
         )
         if phone.find("+") != 0:
             phone = "+1" + phone
-        request.data["phone"] = phone
-
-        serializer = self.serializer_class(data=request.data)
-        # print(serializer)
+        data["phone"] = phone
+        data["utc_created"] = utc_now_int
+        data["utc_updated"] = utc_now_int
+        serializer = self.serializer_class(data=data)
         try:
             if serializer.is_valid():
-                utc_date = datetime.now(timezone.utc)
-                serializer.validated_data["utc_created"] = int(utc_date.timestamp())
-                serializer.validated_data["utc_updated"] = int(utc_date.timestamp())
-                # serializer.validated_data["utc_payed"] = int(
-                #     (utc_date + timedelta(days=30)).timestamp()
-                # )
-
                 serializer.save()
                 clients_id = serializer.data["clients_id"]
-                try:
-                    if config.send_sms != "False":
-                        sid = send_sms(
-                            sms_text=SMS_TEXT_SUBSCRIPTION_IS_OK,
-                            from_phone=config.from_phone,
-                            to_phone=phone,
-                        )
-                        if len(sid) != MESSAGE_SID_LENGTH:
-                            raise Exception("No good sms message sid returned")
-
-                    log.info(f"Sended the subscription sms to clients_id={clients_id}")
-
-                except Exception as exception:
-                    log.error(f"Failed to send sms to clients_id={clients_id}")
+                self.send_sms_to_client(clients_id, phone, SMS_TEXT_SUBSCRIPTION_IS_OK)
                 return Response(
                     [{"clients_id": clients_id}],
                     status=status.HTTP_201_CREATED,
                 )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as exception:
+
+        except IntegrityError as exception:
             text = f"{exception}"
             if text.find("email") >= 0:
-                return Response(
-                    {"email": "Duplicate value"}, status=status.HTTP_400_BAD_REQUEST
-                )
+                clients_email = serializer.validated_data["email"]
+                client = get_object_or_404(Clients, email=clients_email)
+                clients_id = client.clients_id
+
+                # compare phone number
+                if phone != client.phone:
+                    return Response(
+                        {
+                            "phone": "The phone number differs from the one entered during registration."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                # try to update settings for a client
+                try:
+                    data["utc_created"] = client.utc_created
+                    data["clients_id"] = client.clients_id
+
+                    serializer = self.serializer_class(client, data=data)
+                    if serializer.is_valid():
+                        serializer.save()
+                        self.send_sms_to_client(
+                            clients_id, phone, SMS_TEXT_SUBSCRIPTION_IS_UPDATED
+                        )
+
+                        return Response(
+                            [{"clients_id": clients_id}],
+                            status=status.HTTP_200_OK,
+                        )
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                except Exception as exception:
+                    return Response(
+                        {"error": "Error updating client data."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            # duplicate phone number
             if text.find("phone") >= 0:
                 return Response(
-                    {"phone": "Duplicate value"}, status=status.HTTP_400_BAD_REQUEST
+                    {
+                        "phone": "The user with this email has registered a different phone number."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             return Response(
                 [{"error": f"{exception}"}], status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as exception:
+            return Response(
+                {"error": f"{exception}"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
@@ -267,21 +319,16 @@ class ListSMSClientView(APIView):
         # ],
     )
     def list_for_days_in_week(self, weekday: int) -> list:
-        match weekday:
-            case 1:
-                return [3, 7]
-            case 2:
-                return [2, 7]
-            case 3:
-                return [1, 3, 7]
-            case 4:
-                return [2, 7]
-            case 5:
-                return [3, 7]
-            case 6:
-                return [7]
-            case _:
-                return [7]
+        WEEK_SCHEDULER = {
+            1: [3, 7],  # monday
+            2: [2, 7],
+            3: [1, 3, 7],
+            4: [2, 7],
+            5: [3, 7],
+            6: [7],
+            7: [7],
+        }
+        return WEEK_SCHEDULER.get(weekday, [])
 
     def get(self, request, weekday=None, interest=None, format=None):
         """get"""

@@ -51,6 +51,7 @@ SMS_STOP_KEYPHRASE_LIST = [
     "Content unavailable".lower(),
     "I can't generate the story".lower(),
     "Access Denied".lower(),
+    "Access to website denied".lower(),
     "Website blocked".lower(),
 ]
 MAX_SMS_LENGTH_IN_CHARS = 160

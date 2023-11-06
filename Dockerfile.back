@@ -16,4 +16,9 @@ COPY ./config.py ./
 
 COPY ./entrypoint.back.sh ./
 RUN chmod +x entrypoint.back.sh
+
+RUN useradd -ms /bin/bash celery
+RUN chown -R celery:celery /back
+USER celery
+
 ENTRYPOINT ["bash", "entrypoint.back.sh"]
