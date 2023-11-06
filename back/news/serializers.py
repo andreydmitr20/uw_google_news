@@ -13,12 +13,21 @@ from .models import Clients
 class ClientsSerializer(serializers.ModelSerializer):
     """ClientsSerializer"""
 
-    def validate_phone(self, value):
-        regex = r"^\+?1?\d{9,15}$"
-        if not match(regex, value):
-            raise serializers.ValidationError("Enter a valid phone number.")
+    # does not raise the duplicate value exception
+    # def validate_phone(self, value):
+    #     regex = r"^\+?1?\d{9,15}$"
+    #     if not match(regex, value):
+    #         raise serializers.ValidationError("Enter a valid phone number.")
 
-        return value
+    #     return value
+
+    phone = serializers.CharField(
+        validators=[
+            RegexValidator(
+                regex=r"^\+?1?\d{9,15}$", message="Enter a valid phone number."
+            )
+        ]
+    )
 
     email = serializers.EmailField(
         validators=[EmailValidator(message="Enter a valid email address.")]

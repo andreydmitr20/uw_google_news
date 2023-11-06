@@ -280,7 +280,7 @@ class AddClientView(APIView):
             if text.find("phone") >= 0:
                 return Response(
                     {
-                        "phone": "The user with this email has registered a different phone number."
+                        "phone": "The client with this email has registered a different phone number."
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
