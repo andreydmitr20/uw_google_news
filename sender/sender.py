@@ -32,6 +32,7 @@ SCHEDULER_FOR_INTERESTS = [
     [1530, "stop"],
 ]
 
+# wtbshpoenfa
 NEWS_SEARCH_TEXT = {
     "w": "Today top world news",
     "t": "Today tech and innovations top news",

@@ -78,8 +78,11 @@ def ask_chatgpt_worker(chatgpt_data: dict):
     except RateLimitError:
         error = f"RateLimitError Exception, retrying..."
         # log.warning(log_pid + error)
-
         # time.sleep(CHAT_GPT_SECONDS_TO_WAIT_IF_ERROR)
+
+    except Exception as exc:
+        error = f"Exception: {exc}"
+
     chatgpt_data["error"] = error
     # log.warning(log_pid + error)
     # d(3)
