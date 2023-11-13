@@ -53,6 +53,11 @@ SMS_STOP_KEYPHRASE_LIST = [
     "Access Denied".lower(),
     "Access to website denied".lower(),
     "Website blocked".lower(),
+    "Website unavailable".lower(),
+    "Top business stories".lower(),
+    "Stay updated".lower(),
+    "latest news".lower(),
+    "learn more".lower(),
 ]
 MAX_SMS_LENGTH_IN_CHARS = 160
 MAX_CHARS_IN_NEWS_TEXT = 3000
@@ -99,13 +104,16 @@ def news_scraper(search_text: str) -> dict:
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"This is a text of one news: {news_text}",
+                        "content": f"This text contains news: {news_text}",
                     },
                     {
                         "role": "user",
-                        "content": f"""Please make a digest of this news,
-                    strictly less or equal {MAX_SMS_LENGTH_IN_CHARS} 
+                        "content": f"""Please provide a summary of the single most important news item from the given text.
+                    The summary should by strictly less or equal {MAX_SMS_LENGTH_IN_CHARS} 
                     characters in English, without internet links.""",
+                        #     "content": f"""Please make a digest of this news,
+                        # strictly less or equal {MAX_SMS_LENGTH_IN_CHARS}
+                        # characters in English, without internet links.""",
                     },
                     {
                         "role": "user",
