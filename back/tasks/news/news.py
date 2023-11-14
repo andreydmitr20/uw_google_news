@@ -46,8 +46,10 @@ GOOGLE_NEWS_TYPE = [
 SMS_STOP_KEYPHRASE_LIST = [
     # "sex".lower(),
     " characters)".lower(),
+    "website 451".lower(),
     "News not available in".lower(),
     "unavailable due to regional restrictions".lower(),
+    "unavailable due to legal reasons".lower(),
     "Content unavailable".lower(),
     "I can't generate the story".lower(),
     "Access Denied".lower(),
@@ -59,6 +61,8 @@ SMS_STOP_KEYPHRASE_LIST = [
     "latest news".lower(),
     "learn more".lower(),
     "cookies".lower(),
+    "personalized ads".lower(),
+    "targeted advertizing".lower(),
 ]
 MAX_SMS_LENGTH_IN_CHARS = 160
 MAX_CHARS_IN_NEWS_TEXT = 3000
