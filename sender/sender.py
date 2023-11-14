@@ -183,6 +183,7 @@ async def send_sms_to_client(sms_text: str, client: dict, log_pid: str):
                 )
                 if len(sid) != MESSAGE_SID_LENGTH:
                     raise Exception("No good sms message sid returned")
+                log.info(log_pid + f"phone: {client['phone']}, sms sid:{sid}")
 
             return
 
